@@ -2,7 +2,12 @@
   "additionalProperties": true,
   "properties": {
     "provider": {
-      "additionalProperties": true
+      "additionalProperties": true,
+      "properties": {
+        "address": {
+          "minLength": 1
+        }
+      }
     },
     "cluster-autoscaler": {
       "additionalProperties": true,
@@ -11,7 +16,14 @@
           "additionalProperties": true
         },
         "image": {
-          "additionalProperties": true
+          "additionalProperties": true,
+          "properties": {
+            "tag": {
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$"
+            }
+          }
         },
         "replicaCount": {
           "type": "integer"
@@ -36,6 +48,18 @@
             },
             "v": {
               "type": "integer"
+            },
+            "max-node-provision-time": {
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+            },
+            "scale-down-delay-after-add": {
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+            },
+            "scale-down-unneeded-time": {
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+            },
+            "scale-down-unready-time": {
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
             }
           }
         },

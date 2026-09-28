@@ -8,7 +8,8 @@
         "address": {
           "type": "string",
           "description": "Host-published provider address and gRPC port.",
-          "default": ""
+          "default": "",
+          "minLength": 1
         }
       },
       "additionalProperties": true
@@ -44,7 +45,10 @@
             "tag": {
               "type": "string",
               "description": "Cluster Autoscaler image tag, matched to the Kubernetes minor version.",
-              "default": "v1.35.0"
+              "default": "v1.35.0",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$"
             }
           },
           "additionalProperties": true
@@ -65,22 +69,26 @@
             "max-node-provision-time": {
               "type": "string",
               "description": "Maximum time allowed for a new worker to become ready.",
-              "default": "16m"
+              "default": "16m",
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-delay-after-add": {
               "type": "string",
               "description": "Delay before considering scale down after adding a node.",
-              "default": "5m"
+              "default": "5m",
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-unneeded-time": {
               "type": "string",
               "description": "Time a node must remain unneeded before removal.",
-              "default": "5m"
+              "default": "5m",
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-unready-time": {
               "type": "string",
               "description": "Time an unready node must remain unneeded before removal.",
-              "default": "10m"
+              "default": "10m",
+              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "max-scale-down-parallelism": {
               "type": "integer",
