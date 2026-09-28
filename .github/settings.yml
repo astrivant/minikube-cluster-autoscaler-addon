@@ -1,7 +1,7 @@
 # Optional Probot Settings configuration; this file alone does not change GitHub.
 repository:
   name: minikube-cluster-autoscaler-addon
-  description: Bounded native-VM Minikube autoscaling with a containerized Go provider and authenticated host bridge.
+  description: Deploy the cluster autoscaler as a Minikube cluster addon
   topics: minikube, kubernetes, cluster-autoscaler, golang, kvm, qemu, helm, autoscaling
   default_branch: main
   has_issues: true
