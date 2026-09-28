@@ -3,9 +3,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(internal/protos/|LICENSE|charts/.*/provisioningrequests.yaml)
+        exclude: ^(pkg/internal/protos/|LICENSE|charts/.*/provisioningrequests.yaml)
       - id: end-of-file-fixer
-        exclude: ^(internal/protos/|LICENSE|charts/.*/provisioningrequests.yaml)
+        exclude: ^(pkg/internal/protos/|LICENSE|charts/.*/provisioningrequests.yaml)
       - id: check-merge-conflict
       - id: check-added-large-files
       - id: detect-private-key

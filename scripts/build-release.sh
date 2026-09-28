@@ -23,7 +23,7 @@ mkdir -p "$package/bin" "$package/scripts"
 flags="-s -w -X main.version=$version -X main.commit=$revision -X main.buildDate=$build_date"
 CGO_ENABLED=0 GOOS="$target_os" GOARCH="$target_arch" go build -mod=readonly -trimpath -buildvcs=false -ldflags "$flags" -o "$package/bin/minikube-cluster-autoscaler-addon" .
 CGO_ENABLED=0 GOOS=linux GOARCH="$target_arch" go build -mod=readonly -trimpath -buildvcs=false -ldflags "$flags" -o "$package/bin/provider-linux" .
-cp README.md LICENSE LICENSE.kubernetes NOTICE Dockerfile.runtime "$package/"
+cp README.md LICENSE LICENSE.kubernetes NOTICE Dockerfile .dockerignore "$package/"
 cp scripts/addon.sh "$package/scripts/"
 cp -R charts examples docs "$package/"
 test -s "$package/charts/minikube-cluster-autoscaler-addon/charts/cluster-autoscaler-9.59.0.tgz"

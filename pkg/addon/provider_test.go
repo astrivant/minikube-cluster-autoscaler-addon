@@ -1,4 +1,4 @@
-package main
+package addon
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/astrivant/minikube-cluster-autoscaler-addon/internal/protos"
+	pb "github.com/astrivant/minikube-cluster-autoscaler-addon/pkg/internal/protos"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"

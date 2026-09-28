@@ -1,10 +1,10 @@
-package main
+package addon
 
 import (
 	"context"
 	"fmt"
 
-	pb "github.com/astrivant/minikube-cluster-autoscaler-addon/internal/protos"
+	pb "github.com/astrivant/minikube-cluster-autoscaler-addon/pkg/internal/protos"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	v1 "k8s.io/api/core/v1"

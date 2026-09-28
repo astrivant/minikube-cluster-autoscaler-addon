@@ -31,6 +31,7 @@ Usage: scripts/addon.sh COMMAND
   resume   Clear a recoverable provider error while its container is stopped.
 
 init requires MINIKUBE_AUTOSCALER_CONFIG pointing to an edited examples/config.macos.json or examples/config.linux.json.
+build accepts MINIKUBE_AUTOSCALER_BUILD_PROFILE=development|production (default: development in source checkouts, production in releases).
 The native bridge must be running before enable; Docker cannot control macOS HVF directly.
 This is a repository-local addon, not a compiled `minikube addons enable` extension.
 EOF
@@ -108,14 +109,23 @@ esac
 [[ "$PROFILE" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ && ${#PROFILE} -le 40 ]] || fail 'Invalid profile'
 
 if [[ "$1" == build ]]; then
-    mkdir -p "$(dirname "$BINARY")"
     if [[ -f "$PROJECT_ROOT/go.mod" ]]; then
-        go -C "$PROJECT_ROOT" build -mod=readonly -trimpath -o "$BINARY" .
-        docker build --file "$PROJECT_ROOT/Dockerfile" --tag "$IMAGE" "$PROJECT_ROOT"
+        BUILD_PROFILE="${MINIKUBE_AUTOSCALER_BUILD_PROFILE-development}"
     else
-        [[ -x "$BINARY" && -f "$PROJECT_ROOT/bin/provider-linux" ]] || fail 'Incomplete release archive'
-        docker build --file "$PROJECT_ROOT/Dockerfile.runtime" --tag "$IMAGE" "$PROJECT_ROOT"
+        BUILD_PROFILE="${MINIKUBE_AUTOSCALER_BUILD_PROFILE-production}"
     fi
+    case "$BUILD_PROFILE" in
+        development)
+            [[ -f "$PROJECT_ROOT/go.mod" ]] || fail 'Development profile requires a source checkout'
+            mkdir -p "$(dirname "$BINARY")"
+            go -C "$PROJECT_ROOT" build -mod=readonly -trimpath -o "$BINARY" .
+            ;;
+        production)
+            [[ -x "$BINARY" && -f "$PROJECT_ROOT/bin/provider-linux" ]] || fail 'Production profile requires the native bridge and bin/provider-linux from a release archive'
+            ;;
+        *) fail 'Build profile must be development or production' ;;
+    esac
+    docker build --file "$PROJECT_ROOT/Dockerfile" --target "$BUILD_PROFILE" --tag "$IMAGE" "$PROJECT_ROOT"
     exit 0
 fi
 [[ -f "$CONFIG" ]] || fail 'Set MINIKUBE_AUTOSCALER_CONFIG to an edited example configuration, then run init'

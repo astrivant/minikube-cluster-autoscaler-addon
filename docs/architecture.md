@@ -16,6 +16,10 @@ Native Go host bridge
 Protected base nodes + journal-owned elastic workers
 ```
 
+The implementation and its tests live in `pkg/addon/`; generated upstream
+protobufs live in `pkg/internal/protos/`. The root `main.go` passes release
+metadata to the addon CLI.
+
 `rpc.go` serves cached group state so VM startup never blocks gRPC deadlines.
 `state.go` records desired workers before asynchronous provisioning begins.
 `bridge.go` independently validates base-node identity, ownership and budget

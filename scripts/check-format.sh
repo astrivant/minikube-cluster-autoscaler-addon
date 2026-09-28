@@ -2,7 +2,9 @@
 # Generated upstream protobufs are intentionally retained byte for byte.
 set -euo pipefail
 files=()
-while IFS= read -r path; do files+=("$path"); done < <(git ls-files '*.go' ':!:internal/protos/*')
+while IFS= read -r path; do
+    if [[ -f "$path" ]]; then files+=("$path"); fi
+done < <(git ls-files --cached --others --exclude-standard --deduplicate '*.go' ':!:pkg/internal/protos/*')
 [[ ${#files[@]} -gt 0 ]]
 unformatted="$(gofmt -l "${files[@]}")"
 [[ -z "$unformatted" ]] || {

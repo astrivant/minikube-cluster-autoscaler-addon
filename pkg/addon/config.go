@@ -1,5 +1,5 @@
 // Package main implements the opt-in Minikube autoscaler and its native VM bridge.
-package main
+package addon
 
 import (
 	"encoding/json"

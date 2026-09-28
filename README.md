@@ -134,6 +134,33 @@ migrate or modify the existing Polyad lab.
 
 ## Development and releases
 
+The single Dockerfile provides two build profiles through named targets:
+
+- `development` compiles the provider from source (the default Docker target).
+- `production` packages the prebuilt `bin/provider-linux` supplied in release archives.
+
+Both profiles use the same restricted scratch runtime. `scripts/addon.sh build`
+selects development in source checkouts and production in extracted releases.
+Override the selection with `MINIKUBE_AUTOSCALER_BUILD_PROFILE`, independently
+of the Minikube cluster profile:
+
+```bash
+MINIKUBE_AUTOSCALER_BUILD_PROFILE=development bash scripts/addon.sh build
+# From an extracted release archive:
+MINIKUBE_AUTOSCALER_BUILD_PROFILE=production bash scripts/addon.sh build
+```
+
+For container-only builds:
+
+```bash
+docker build --target development -t minikube-cluster-autoscaler-addon:local .
+# With the prebuilt Linux binary present:
+docker build --target production -t minikube-cluster-autoscaler-addon:local .
+```
+
+These targets require Docker BuildKit so production builds can skip the source
+compilation stage.
+
 Use Go 1.27.1, pre-commit, ShellCheck, shfmt, actionlint and Helm:
 
 ```bash

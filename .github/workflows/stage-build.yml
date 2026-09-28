@@ -59,5 +59,15 @@ jobs:
           persist-credentials: false
       - name: Build and inspect restricted Linux provider
         run: |
-          docker build -t minikube-cluster-autoscaler-addon:ci .
+          docker build --target development -t minikube-cluster-autoscaler-addon:ci .
           docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges minikube-cluster-autoscaler-addon:ci --version
+      - name: Build production profile without source files
+        run: |
+          context="$(mktemp -d)"
+          mkdir -p "$context/bin"
+          cp Dockerfile .dockerignore "$context/"
+          container="$(docker create minikube-cluster-autoscaler-addon:ci)"
+          docker cp "$container:/provider" "$context/bin/provider-linux"
+          docker rm "$container"
+          docker build --target production -t minikube-cluster-autoscaler-addon:production "$context"
+          docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges minikube-cluster-autoscaler-addon:production --version
