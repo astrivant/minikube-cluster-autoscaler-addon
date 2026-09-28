@@ -1,0 +1,171 @@
+{
+  "additionalProperties": true,
+  "properties": {
+    "provider": {
+      "additionalProperties": true
+    },
+    "cluster-autoscaler": {
+      "additionalProperties": true,
+      "properties": {
+        "autoDiscovery": {
+          "additionalProperties": true
+        },
+        "image": {
+          "additionalProperties": true
+        },
+        "replicaCount": {
+          "type": "integer"
+        },
+        "nodeSelector": {
+          "type": "object",
+          "properties": {
+            "minikube-autoscaler.astrivant.com/pool": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "extraArgs": {
+          "additionalProperties": true,
+          "properties": {
+            "max-scale-down-parallelism": {
+              "type": "integer"
+            },
+            "max-nodes-per-scaleup": {
+              "type": "integer"
+            },
+            "v": {
+              "type": "integer"
+            }
+          }
+        },
+        "extraVolumes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "configMap": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "defaultMode": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 511
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "path"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "mode": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 511
+                        }
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              "secret": {
+                "type": "object",
+                "properties": {
+                  "secretName": {
+                    "type": "string"
+                  },
+                  "defaultMode": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 511
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "path"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "mode": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 511
+                        }
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "extraVolumeMounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "mountPath": {
+                "type": "string"
+              },
+              "readOnly": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "resources": {
+          "additionalProperties": true,
+          "properties": {
+            "requests": {
+              "additionalProperties": true
+            },
+            "limits": {
+              "additionalProperties": true
+            }
+          }
+        },
+        "cloudProvider": {
+          "const": "externalgrpc"
+        }
+      }
+    }
+  }
+}

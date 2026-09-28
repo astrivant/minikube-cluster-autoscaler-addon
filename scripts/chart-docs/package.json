@@ -1,0 +1,10 @@
+{
+  "name": "autoscaler-chart-docs",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=24 <25"},
+  "scripts": {"generate": "node generate.mjs"},
+  "dependencies": {
+    "@bitnami/readme-generator-for-helm": "https://github.com/bitnami/readme-generator-for-helm/archive/4d29f59abac6aeed6fbc2467e24fc17560057bcb.tar.gz"
+  }
+}

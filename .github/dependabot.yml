@@ -1,5 +1,9 @@
 version: 2
 updates:
+  - package-ecosystem: npm
+    directory: /scripts/chart-docs
+    schedule:
+      interval: weekly
   - package-ecosystem: gomod
     directory: /
     schedule:

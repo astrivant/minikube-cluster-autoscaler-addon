@@ -62,7 +62,8 @@ The wrapper chart is `charts/minikube-cluster-autoscaler-addon`. It uses upstrea
 Cluster Autoscaler chart 9.59.0 and image 1.35.0. `provider.address` is mandatory.
 The chart uses the fixed release name `minikube-cluster-autoscaler-addon`
 to match its ConfigMap and TLS Secret; the script supplies it consistently.
-Values and their schema expose node placement, resource limits, TLS volumes,
+The [chart parameters](../charts/minikube-cluster-autoscaler-addon/README.md#parameters)
+and their schema expose node placement, resource limits, TLS volumes,
 upstream flags and worker provisioning timeout. Scale-down honors local-storage
 and system-Pod exclusions, one deletion at a time.
 

@@ -29,6 +29,12 @@ repos:
         types: [python]
   - repo: local
     hooks:
+      - id: chart-docs
+        name: Generate chart documentation and schemas
+        entry: make chart-docs
+        language: system
+        pass_filenames: false
+        files: '^(charts/[^/]+/(values.*\.(yaml|json)|README\.md)|scripts/chart-docs/|Makefile$)'
       - id: docstring-layout
         name: Multiline docstring layout
         entry: python scripts/check-docstrings.py

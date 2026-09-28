@@ -1,95 +1,86 @@
 # yaml-language-server: $schema=values.schema.json
 # Reachable address of the host-published provider; never a Pod or Docker IP.
-## @param provider [object] Settings for provider.
 provider:
-  ## @param provider.address [string] Settings for provider.address.
+## @section Provider connection
+  ## @param provider.address Host-published provider address and gRPC port.
   address: ""
 
-## @param cluster-autoscaler [object] Settings for cluster-autoscaler.
 cluster-autoscaler:
-  ## @param cluster-autoscaler.fullnameOverride [string] Settings for cluster-autoscaler.fullnameOverride.
+## @section Cluster Autoscaler
+  ## @param cluster-autoscaler.fullnameOverride Name used for Cluster Autoscaler resources.
   fullnameOverride: minikube-cluster-autoscaler-addon
-  ## @param cluster-autoscaler.cloudProvider [string] Settings for cluster-autoscaler.cloudProvider.
+  ## @param cluster-autoscaler.cloudProvider Cluster Autoscaler provider; this addon uses externalgrpc.
   cloudProvider: externalgrpc
-  ## @param cluster-autoscaler.autoDiscovery [object] Settings for cluster-autoscaler.autoDiscovery.
   autoDiscovery:
-    ## @param cluster-autoscaler.autoDiscovery.clusterName [string] Settings for cluster-autoscaler.autoDiscovery.clusterName.
+    ## @param cluster-autoscaler.autoDiscovery.clusterName Minikube profile name.
     clusterName: minikube
-  ## @param cluster-autoscaler.image [object] Settings for cluster-autoscaler.image.
   image:
-    ## @param cluster-autoscaler.image.tag [string] Settings for cluster-autoscaler.image.tag.
+    ## @param cluster-autoscaler.image.tag Cluster Autoscaler image tag, matched to the Kubernetes minor version.
     tag: v1.35.0
-  ## @param cluster-autoscaler.replicaCount [integer] Settings for cluster-autoscaler.replicaCount.
+  ## @param cluster-autoscaler.replicaCount Number of Cluster Autoscaler replicas.
   replicaCount: 1
-  ## @param cluster-autoscaler.nodeSelector [object] Settings for cluster-autoscaler.nodeSelector.
+  ## @param cluster-autoscaler.nodeSelector.minikube-autoscaler.astrivant.com/pool Node pool hosting Cluster Autoscaler.
   nodeSelector:
-    ## @param cluster-autoscaler.nodeSelector.minikube-autoscaler.astrivant.com/pool [string] Settings for cluster-autoscaler.nodeSelector.minikube-autoscaler.astrivant.com/pool.
     minikube-autoscaler.astrivant.com/pool: base
-  ## @param cluster-autoscaler.extraArgs [object] Settings for cluster-autoscaler.extraArgs.
   extraArgs:
-    ## @param cluster-autoscaler.extraArgs.cloud-config [string] Settings for cluster-autoscaler.extraArgs.cloud-config.
+    ## @param cluster-autoscaler.extraArgs.cloud-config Path to the mounted external gRPC provider configuration.
     cloud-config: /etc/provider/cloud-config.yaml
-    ## @param cluster-autoscaler.extraArgs.max-node-provision-time [string] Settings for cluster-autoscaler.extraArgs.max-node-provision-time.
+    ## @param cluster-autoscaler.extraArgs.max-node-provision-time Maximum time allowed for a new worker to become ready.
     max-node-provision-time: 16m
-    ## @param cluster-autoscaler.extraArgs.scale-down-delay-after-add [string] Settings for cluster-autoscaler.extraArgs.scale-down-delay-after-add.
+    ## @param cluster-autoscaler.extraArgs.scale-down-delay-after-add Delay before considering scale down after adding a node.
     scale-down-delay-after-add: 5m
-    ## @param cluster-autoscaler.extraArgs.scale-down-unneeded-time [string] Settings for cluster-autoscaler.extraArgs.scale-down-unneeded-time.
+    ## @param cluster-autoscaler.extraArgs.scale-down-unneeded-time Time a node must remain unneeded before removal.
     scale-down-unneeded-time: 5m
-    ## @param cluster-autoscaler.extraArgs.scale-down-unready-time [string] Settings for cluster-autoscaler.extraArgs.scale-down-unready-time.
+    ## @param cluster-autoscaler.extraArgs.scale-down-unready-time Time an unready node must remain unneeded before removal.
     scale-down-unready-time: 10m
-    ## @param cluster-autoscaler.extraArgs.max-scale-down-parallelism [integer] Settings for cluster-autoscaler.extraArgs.max-scale-down-parallelism.
+    ## @param cluster-autoscaler.extraArgs.max-scale-down-parallelism Maximum concurrent node removals.
     max-scale-down-parallelism: 1
-    ## @param cluster-autoscaler.extraArgs.max-nodes-per-scaleup [integer] Settings for cluster-autoscaler.extraArgs.max-nodes-per-scaleup.
+    ## @param cluster-autoscaler.extraArgs.max-nodes-per-scaleup Maximum nodes added in one scale-out decision.
     max-nodes-per-scaleup: 1
-    ## @param cluster-autoscaler.extraArgs.enable-provisioning-requests [boolean] Settings for cluster-autoscaler.extraArgs.enable-provisioning-requests.
+    ## @param cluster-autoscaler.extraArgs.enable-provisioning-requests Enable ProvisioningRequest processing.
     enable-provisioning-requests: true
-    ## @param cluster-autoscaler.extraArgs.skip-nodes-with-local-storage [boolean] Settings for cluster-autoscaler.extraArgs.skip-nodes-with-local-storage.
+    ## @param cluster-autoscaler.extraArgs.skip-nodes-with-local-storage Keep nodes with pods using local storage.
     skip-nodes-with-local-storage: true
-    ## @param cluster-autoscaler.extraArgs.skip-nodes-with-system-pods [boolean] Settings for cluster-autoscaler.extraArgs.skip-nodes-with-system-pods.
+    ## @param cluster-autoscaler.extraArgs.skip-nodes-with-system-pods Keep nodes with non-DaemonSet system pods.
     skip-nodes-with-system-pods: true
-    ## @param cluster-autoscaler.extraArgs.leader-elect [boolean] Settings for cluster-autoscaler.extraArgs.leader-elect.
+    ## @param cluster-autoscaler.extraArgs.leader-elect Enable leader election among autoscaler replicas.
     leader-elect: true
-    ## @param cluster-autoscaler.extraArgs.v [integer] Settings for cluster-autoscaler.extraArgs.v.
+    ## @param cluster-autoscaler.extraArgs.v Cluster Autoscaler log verbosity.
     v: 4
-  ## @param cluster-autoscaler.extraVolumes [array] Settings for cluster-autoscaler.extraVolumes.
+  # Provider configuration and client TLS volumes.
   extraVolumes:
-    ## @param cluster-autoscaler.extraVolumes[].name [string] Settings for cluster-autoscaler.extraVolumes[].name.
+    ## @param cluster-autoscaler.extraVolumes[0].name Provider configuration volume name.
     - name: provider-config
-      ## @param cluster-autoscaler.extraVolumes[].configMap [object] Settings for cluster-autoscaler.extraVolumes[].configMap.
       configMap:
-        ## @param cluster-autoscaler.extraVolumes[].configMap.name [string] Settings for cluster-autoscaler.extraVolumes[].configMap.name.
+        ## @param cluster-autoscaler.extraVolumes[0].configMap.name Provider configuration ConfigMap name.
         name: minikube-cluster-autoscaler-addon-provider
-    ## @param cluster-autoscaler.extraVolumes[].name [string] Settings for cluster-autoscaler.extraVolumes[].name.
+    ## @param cluster-autoscaler.extraVolumes[1].name Client TLS volume name.
     - name: provider-client
-      ## @param cluster-autoscaler.extraVolumes[].secret [object] Settings for cluster-autoscaler.extraVolumes[].secret.
       secret:
-        ## @param cluster-autoscaler.extraVolumes[].secret.secretName [string] Settings for cluster-autoscaler.extraVolumes[].secret.secretName.
+        ## @param cluster-autoscaler.extraVolumes[1].secret.secretName Client TLS Secret name.
         secretName: minikube-cluster-autoscaler-addon-client
-  ## @param cluster-autoscaler.extraVolumeMounts [array] Settings for cluster-autoscaler.extraVolumeMounts.
+  # Read-only provider configuration and client TLS mounts.
   extraVolumeMounts:
-    ## @param cluster-autoscaler.extraVolumeMounts[].name [string] Settings for cluster-autoscaler.extraVolumeMounts[].name.
+    ## @param cluster-autoscaler.extraVolumeMounts[0].name Mounted volume name.
     - name: provider-config
-      ## @param cluster-autoscaler.extraVolumeMounts[].mountPath [string] Settings for cluster-autoscaler.extraVolumeMounts[].mountPath.
+      ## @param cluster-autoscaler.extraVolumeMounts[0].mountPath Container mount path.
       mountPath: /etc/provider
-      ## @param cluster-autoscaler.extraVolumeMounts[].readOnly [boolean] Settings for cluster-autoscaler.extraVolumeMounts[].readOnly.
+      ## @param cluster-autoscaler.extraVolumeMounts[0].readOnly Mount the volume read-only.
       readOnly: true
-    ## @param cluster-autoscaler.extraVolumeMounts[].name [string] Settings for cluster-autoscaler.extraVolumeMounts[].name.
+    ## @param cluster-autoscaler.extraVolumeMounts[1].name Mounted volume name.
     - name: provider-client
-      ## @param cluster-autoscaler.extraVolumeMounts[].mountPath [string] Settings for cluster-autoscaler.extraVolumeMounts[].mountPath.
+      ## @param cluster-autoscaler.extraVolumeMounts[1].mountPath Container mount path.
       mountPath: /etc/provider-tls
-      ## @param cluster-autoscaler.extraVolumeMounts[].readOnly [boolean] Settings for cluster-autoscaler.extraVolumeMounts[].readOnly.
+      ## @param cluster-autoscaler.extraVolumeMounts[1].readOnly Mount the volume read-only.
       readOnly: true
-  ## @param cluster-autoscaler.resources [object] Settings for cluster-autoscaler.resources.
   resources:
-    ## @param cluster-autoscaler.resources.requests [object] Settings for cluster-autoscaler.resources.requests.
     requests:
-      ## @param cluster-autoscaler.resources.requests.cpu [string] Settings for cluster-autoscaler.resources.requests.cpu.
+      ## @param cluster-autoscaler.resources.requests.cpu CPU reserved for Cluster Autoscaler.
       cpu: 100m
-      ## @param cluster-autoscaler.resources.requests.memory [string] Settings for cluster-autoscaler.resources.requests.memory.
+      ## @param cluster-autoscaler.resources.requests.memory Memory reserved for Cluster Autoscaler.
       memory: 128Mi
-    ## @param cluster-autoscaler.resources.limits [object] Settings for cluster-autoscaler.resources.limits.
     limits:
-      ## @param cluster-autoscaler.resources.limits.cpu [string] Settings for cluster-autoscaler.resources.limits.cpu.
+      ## @param cluster-autoscaler.resources.limits.cpu CPU limit for Cluster Autoscaler.
       cpu: 500m
-      ## @param cluster-autoscaler.resources.limits.memory [string] Settings for cluster-autoscaler.resources.limits.memory.
+      ## @param cluster-autoscaler.resources.limits.memory Memory limit for Cluster Autoscaler.
       memory: 512Mi

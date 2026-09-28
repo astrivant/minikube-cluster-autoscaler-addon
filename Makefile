@@ -1,4 +1,4 @@
-.PHONY: build test vuln lint chart demo-test release hooks
+.PHONY: build test vuln lint chart chart-docs demo-test release hooks
 
 build:
 	go build -mod=readonly -trimpath -o bin/minikube-cluster-autoscaler-addon .
@@ -16,6 +16,12 @@ chart:
 	bash scripts/chart-dependencies.sh
 	helm lint charts/minikube-cluster-autoscaler-addon --set provider.address=192.168.105.1:50051 --kube-version 1.35.0
 	helm lint charts/autoscaling-demo --kube-version 1.35.0
+
+scripts/chart-docs/node_modules/.package-lock.json: scripts/chart-docs/package.json scripts/chart-docs/package-lock.json
+	npm ci --prefix scripts/chart-docs --ignore-scripts
+
+chart-docs: scripts/chart-docs/node_modules/.package-lock.json
+	npm --prefix scripts/chart-docs run generate
 
 demo-test:
 	python3 scripts/test-demo.py

@@ -1,28 +1,49 @@
+# yaml-language-server: $schema=values.schema.json
+## @section Traffic receiver
 workload:
+  ## @param workload.image Traffic receiver image.
   image: python:3.13-alpine
+  ## @param workload.workMilliseconds CPU work performed per request, in milliseconds.
   workMilliseconds: 100
   resources:
     requests:
+      ## @param workload.resources.requests.cpu CPU request for the receiver.
       cpu: 200m
+      ## @param workload.resources.requests.memory Memory request for the receiver.
       memory: 64Mi
     limits:
+      ## @param workload.resources.limits.cpu CPU limit for the receiver.
       cpu: 500m
+      ## @param workload.resources.limits.memory Memory limit for the receiver.
       memory: 128Mi
+## @section Horizontal scaling
 hpa:
+  ## @param hpa.minReplicas Minimum receiver replicas.
   minReplicas: 1
+  ## @param hpa.maxReplicas Maximum receiver replicas; each replica requires a separate node.
   maxReplicas: 3
+  ## @param hpa.targetCPUUtilizationPercentage CPU utilization target relative to each receiver CPU request.
   targetCPUUtilizationPercentage: 50
+  ## @param hpa.scaleDownStabilizationSeconds HPA scale-down stabilization window in seconds.
   scaleDownStabilizationSeconds: 60
+## @section Load generator
 loadGenerator:
+  ## @param loadGenerator.enabled Run the load generator Job.
   enabled: true
+  ## @param loadGenerator.image k6 load generator image.
   image: grafana/k6:1.3.0
-  # Add JSON profiles under files/profiles/ and select one here.
+  ## @param loadGenerator.profile Load profile JSON file packaged under files/profiles/.
   profile: files/profiles/default.json
+  ## @param loadGenerator.activeDeadlineSeconds Maximum load generator Job duration in seconds.
   activeDeadlineSeconds: 3600
   resources:
     requests:
+      ## @param loadGenerator.resources.requests.cpu CPU request for the load generator.
       cpu: 100m
+      ## @param loadGenerator.resources.requests.memory Memory request for the load generator.
       memory: 64Mi
     limits:
+      ## @param loadGenerator.resources.limits.cpu CPU limit for the load generator.
       cpu: 500m
+      ## @param loadGenerator.resources.limits.memory Memory limit for the load generator.
       memory: 256Mi

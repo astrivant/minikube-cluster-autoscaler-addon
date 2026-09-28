@@ -1,7 +1,7 @@
 # Contributing
 
 Use the Go version in `.go-version`, Python 3.13, pre-commit, ShellCheck, shfmt,
-actionlint, and Helm.
+actionlint, Helm, and Node.js 24.
 
 ```bash
 make hooks
@@ -9,10 +9,21 @@ make test
 make vuln
 make lint
 make chart
+make chart-docs
 ```
 
 `make vuln` checks all Go dependency versions against the Go vulnerability
 database. CI requires this scan to pass before verification and release.
+
+`make chart-docs` uses pinned [Bitnami tooling](https://github.com/bitnami/readme-generator-for-helm)
+to generate both charts' parameter tables and `values.schema.json` files from
+`@param` comments in `values.yaml`. Put additional validation rules in each
+chart's `values.schema.constraints.json`. Pre-commit regenerates these files;
+CI checks that the committed outputs match.
+
+The hypothesis-helm job varies the documented scalar values and array fields in
+the Bitnami annotations, using the chart defaults with a test provider address. Every
+render includes the upstream chart and is checked against Kubernetes 1.35 schemas.
 
 Implementation and tests live in `pkg/addon/`. Explain ownership and concurrency
 decisions inline, and cover lifecycle changes with the fake provisioning backend.

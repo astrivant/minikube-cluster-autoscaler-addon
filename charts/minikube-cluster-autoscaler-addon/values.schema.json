@@ -1,12 +1,14 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Chart Values",
   "type": "object",
   "properties": {
     "provider": {
       "type": "object",
       "properties": {
         "address": {
-          "type": "string"
+          "type": "string",
+          "description": "Host-published provider address and gRPC port.",
+          "default": ""
         }
       },
       "additionalProperties": true
@@ -15,16 +17,23 @@
       "type": "object",
       "properties": {
         "fullnameOverride": {
-          "type": "string"
+          "type": "string",
+          "description": "Name used for Cluster Autoscaler resources.",
+          "default": "minikube-cluster-autoscaler-addon"
         },
         "cloudProvider": {
-          "type": "string"
+          "type": "string",
+          "description": "Cluster Autoscaler provider; this addon uses externalgrpc.",
+          "default": "externalgrpc",
+          "const": "externalgrpc"
         },
         "autoDiscovery": {
           "type": "object",
           "properties": {
             "clusterName": {
-              "type": "string"
+              "type": "string",
+              "description": "Minikube profile name.",
+              "default": "minikube"
             }
           },
           "additionalProperties": true
@@ -33,90 +42,177 @@
           "type": "object",
           "properties": {
             "tag": {
-              "type": "string"
+              "type": "string",
+              "description": "Cluster Autoscaler image tag, matched to the Kubernetes minor version.",
+              "default": "v1.35.0"
             }
           },
           "additionalProperties": true
         },
         "replicaCount": {
-          "type": "integer"
-        },
-        "nodeSelector": {
-          "type": "object",
-          "properties": {
-            "minikube-autoscaler.astrivant.com/pool": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": true
+          "type": "integer",
+          "description": "Number of Cluster Autoscaler replicas.",
+          "default": 1
         },
         "extraArgs": {
           "type": "object",
           "properties": {
             "cloud-config": {
-              "type": "string"
+              "type": "string",
+              "description": "Path to the mounted external gRPC provider configuration.",
+              "default": "/etc/provider/cloud-config.yaml"
             },
             "max-node-provision-time": {
-              "type": "string"
+              "type": "string",
+              "description": "Maximum time allowed for a new worker to become ready.",
+              "default": "16m"
             },
             "scale-down-delay-after-add": {
-              "type": "string"
+              "type": "string",
+              "description": "Delay before considering scale down after adding a node.",
+              "default": "5m"
             },
             "scale-down-unneeded-time": {
-              "type": "string"
+              "type": "string",
+              "description": "Time a node must remain unneeded before removal.",
+              "default": "5m"
             },
             "scale-down-unready-time": {
-              "type": "string"
+              "type": "string",
+              "description": "Time an unready node must remain unneeded before removal.",
+              "default": "10m"
             },
             "max-scale-down-parallelism": {
-              "type": "integer"
+              "type": "integer",
+              "description": "Maximum concurrent node removals.",
+              "default": 1
             },
             "max-nodes-per-scaleup": {
-              "type": "integer"
+              "type": "integer",
+              "description": "Maximum nodes added in one scale-out decision.",
+              "default": 1
             },
             "enable-provisioning-requests": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable ProvisioningRequest processing.",
+              "default": true
             },
             "skip-nodes-with-local-storage": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Keep nodes with pods using local storage.",
+              "default": true
             },
             "skip-nodes-with-system-pods": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Keep nodes with non-DaemonSet system pods.",
+              "default": true
             },
             "leader-elect": {
-              "type": "boolean"
+              "type": "boolean",
+              "description": "Enable leader election among autoscaler replicas.",
+              "default": true
             },
             "v": {
-              "type": "integer"
+              "type": "integer",
+              "description": "Cluster Autoscaler log verbosity.",
+              "default": 4
             }
           },
           "additionalProperties": true
         },
         "extraVolumes": {
           "type": "array",
+          "description": "Provider configuration volume name.",
           "items": {
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "description": "Client TLS volume name."
               },
               "configMap": {
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Provider configuration ConfigMap name."
+                  },
+                  "defaultMode": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 511
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "path"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "mode": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 511
+                        }
+                      }
+                    }
                   }
                 },
-                "additionalProperties": true
+                "additionalProperties": false
               },
               "secret": {
                 "type": "object",
                 "properties": {
                   "secretName": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Client TLS Secret name."
+                  },
+                  "defaultMode": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 511
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "path"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "mode": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 511
+                        }
+                      }
+                    }
                   }
                 },
-                "additionalProperties": true
+                "additionalProperties": false
               }
             },
             "additionalProperties": true
@@ -124,17 +220,21 @@
         },
         "extraVolumeMounts": {
           "type": "array",
+          "description": "Mounted volume name.",
           "items": {
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "description": "Mounted volume name."
               },
               "mountPath": {
-                "type": "string"
+                "type": "string",
+                "description": "Container mount path."
               },
               "readOnly": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Mount the volume read-only."
               }
             },
             "additionalProperties": true
@@ -147,10 +247,14 @@
               "type": "object",
               "properties": {
                 "cpu": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "CPU reserved for Cluster Autoscaler.",
+                  "default": "100m"
                 },
                 "memory": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Memory reserved for Cluster Autoscaler.",
+                  "default": "128Mi"
                 }
               },
               "additionalProperties": true
@@ -159,13 +263,26 @@
               "type": "object",
               "properties": {
                 "cpu": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "CPU limit for Cluster Autoscaler.",
+                  "default": "500m"
                 },
                 "memory": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Memory limit for Cluster Autoscaler.",
+                  "default": "512Mi"
                 }
               },
               "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "nodeSelector": {
+          "type": "object",
+          "properties": {
+            "minikube-autoscaler.astrivant.com/pool": {
+              "type": "string"
             }
           },
           "additionalProperties": true
@@ -174,5 +291,7 @@
       "additionalProperties": true
     }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Generated by make chart-docs from values.yaml and values.schema.constraints.json."
 }

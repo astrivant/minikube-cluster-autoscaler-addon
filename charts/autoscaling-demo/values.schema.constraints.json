@@ -1,0 +1,160 @@
+{
+  "additionalProperties": false,
+  "required": [
+    "workload",
+    "hpa",
+    "loadGenerator"
+  ],
+  "properties": {
+    "workload": {
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "workMilliseconds",
+        "resources"
+      ],
+      "properties": {
+        "image": {
+          "minLength": 1
+        },
+        "workMilliseconds": {
+          "minimum": 1,
+          "maximum": 1000,
+          "type": "integer"
+        },
+        "resources": {
+          "required": [
+            "requests",
+            "limits"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "requests": {
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "minLength": 1
+                },
+                "memory": {
+                  "minLength": 1
+                }
+              }
+            },
+            "limits": {
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "minLength": 1
+                },
+                "memory": {
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hpa": {
+      "additionalProperties": false,
+      "required": [
+        "minReplicas",
+        "maxReplicas",
+        "targetCPUUtilizationPercentage",
+        "scaleDownStabilizationSeconds"
+      ],
+      "properties": {
+        "minReplicas": {
+          "minimum": 1,
+          "maximum": 17,
+          "type": "integer"
+        },
+        "maxReplicas": {
+          "minimum": 1,
+          "maximum": 17,
+          "type": "integer"
+        },
+        "targetCPUUtilizationPercentage": {
+          "minimum": 1,
+          "maximum": 100,
+          "type": "integer"
+        },
+        "scaleDownStabilizationSeconds": {
+          "minimum": 0,
+          "maximum": 3600,
+          "type": "integer"
+        }
+      }
+    },
+    "loadGenerator": {
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "image",
+        "profile",
+        "activeDeadlineSeconds",
+        "resources"
+      ],
+      "properties": {
+        "image": {
+          "minLength": 1
+        },
+        "profile": {
+          "pattern": "^files/profiles/[a-zA-Z0-9][a-zA-Z0-9_/-]*\\.json$"
+        },
+        "activeDeadlineSeconds": {
+          "minimum": 60,
+          "maximum": 86400,
+          "type": "integer"
+        },
+        "resources": {
+          "required": [
+            "requests",
+            "limits"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "requests": {
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "minLength": 1
+                },
+                "memory": {
+                  "minLength": 1
+                }
+              }
+            },
+            "limits": {
+              "required": [
+                "cpu",
+                "memory"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "minLength": 1
+                },
+                "memory": {
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

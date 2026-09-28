@@ -38,20 +38,39 @@ jobs:
           version: v4.3.0
       - name: Register the chart dependency repository
         run: helm repo add autoscaler https://kubernetes.github.io/autoscaler
+      - name: Prepare chart test baseline and documented values
+        id: chart-values
+        # Path selection uses single-chart mode with a complete values.yaml.
+        run: |
+          cp -R charts/minikube-cluster-autoscaler-addon "$RUNNER_TEMP/autoscaler-chart"
+          helm dependency build "$RUNNER_TEMP/autoscaler-chart"
+          sed 's/^  address: ""$/  address: 192.168.105.1:50051/' \
+            charts/minikube-cluster-autoscaler-addon/values.yaml > "$RUNNER_TEMP/autoscaler-chart/values.yaml"
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          # Match Bitnami-documented values, including fields in array items.
+          values = Path("charts/minikube-cluster-autoscaler-addon/values.yaml").read_text()
+          names = set()
+          for key in re.findall(r"## @param (\S+)", values):
+              key = re.sub(r"\[\d+\]", ".*", key)
+              names.add("test_" + re.sub(r"[^a-zA-Z0-9_]", "_", key)[:80] + "_")
+          match = " or ".join(sorted(names))
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"match={match}\n")
+          PY
       - name: Test chart with hypothesis-helm
         uses: astrivant/hypothesis-helm@dbc07922420fa38ddeead026f7c857eeaae66910 # v1.3.5
         with:
-          chart: charts/minikube-cluster-autoscaler-addon
-          values: ${{ github.workspace }}/.github/hypothesis-helm-values.yaml
+          chart: ${{ runner.temp }}/autoscaler-chart
+          match: ${{ steps.chart-values.outputs.match }}
+          paths: 'true'
           kube-version: '1.35.0'
           schema-version: '1.35.0'
-          build-dependencies: 'true'
           seed: '20260927'
-          chart-timeout: 3m
-          scan-timeout: 5m
           fail: error
-          report: 'true'
-          pca-samples: '0'
 
   go:
     name: Go / ${{ matrix.runner }}
@@ -112,6 +131,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: scripts/chart-docs/package-lock.json
       - uses: azure/setup-helm@v4.3.0
         with:
           version: v3.19.0
