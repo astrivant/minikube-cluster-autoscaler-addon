@@ -1,10 +1,13 @@
-.PHONY: build test lint chart demo-test release hooks
+.PHONY: build test vuln lint chart demo-test release hooks
 
 build:
 	go build -mod=readonly -trimpath -o bin/minikube-cluster-autoscaler-addon .
 
 test:
 	go test -race -coverprofile=coverage.out ./...
+
+vuln:
+	go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 -scan=module
 
 lint:
 	pre-commit run --all-files

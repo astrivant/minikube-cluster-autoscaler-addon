@@ -1,18 +1,27 @@
 # Minikube integration
 
-The built-in addon in the neighboring Minikube project owns host setup and
+The built-in Minikube addon owns host setup and
 process lifecycle. This repository supplies the provider, native bridge, Helm
 chart, and platform lifecycle hooks (`scripts/addon.sh` on macOS/Linux and
 `scripts/addon.ps1` on Windows).
 
 ## Installation
 
-Use a Minikube build containing the `cluster-autoscaler` addon. Install this
-project's [release bundle](releases.md#install-an-archive) under
-`~/.minikube/addons/cluster-autoscaler`, or set
-`MINIKUBE_AUTOSCALER_ADDON_PATH` to a checkout or extracted bundle.
-Minikube also discovers a bundle through its binary on `PATH` and discovers
-neighboring source checkouts during development.
+Use a Minikube build containing the [cluster-autoscaler integration](https://github.com/kubernetes/minikube/pull/23809).
+The [README quick install](../README.md#quick-install) places this project at
+`~/.minikube/addons/cluster-autoscaler`, where Minikube discovers it automatically.
+
+For an existing checkout, an extracted [release bundle](releases.md#install-an-archive),
+or a custom Minikube home, select the installation explicitly:
+
+```bash
+export MINIKUBE_AUTOSCALER_ADDON_PATH=/absolute/path/to/minikube-cluster-autoscaler-addon
+minikube addons enable cluster-autoscaler
+```
+
+In PowerShell, set `$env:MINIKUBE_AUTOSCALER_ADDON_PATH` instead. Minikube also
+finds a bundle through its binary on `PATH` and neighboring source checkouts
+during development.
 
 The host needs Docker, Helm and kubectl, plus Bash and jq on macOS/Linux or
 PowerShell on Windows. Windows uses Docker Desktop with Linux containers.

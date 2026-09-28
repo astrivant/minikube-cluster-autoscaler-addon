@@ -8,6 +8,22 @@ on:
 permissions:
   contents: read
 jobs:
+  vulnerabilities:
+    name: Go dependency vulnerabilities
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: .go-version
+          cache: true
+      - name: Scan all Go dependencies
+        run: make vuln
+
   helm-properties:
     name: Helm properties / Kubernetes 1.35.0
     runs-on: ubuntu-24.04

@@ -96,8 +96,14 @@ requests, limits, images, and HPA settings.
 
 ## Scale-down and cleanup
 
-Disable traffic with `--reuse-values --set loadGenerator.enabled=false` on a Helm
-upgrade. The HPA returns to one replica after its 60-second stabilization window.
+Stop traffic while keeping the receivers installed:
+
+```bash
+helm upgrade scale-demo charts/autoscaling-demo --kube-context minikube \
+  --namespace autoscaling-demo --reuse-values --set loadGenerator.enabled=false
+```
+
+The HPA returns to one replica after its 60-second stabilization window.
 That remaining Pod can occupy an elastic node. Uninstalling the demo removes
 all receivers so both elastic workers can drain and be deleted after the
 five-minute autoscaler idle window. The base node remains.

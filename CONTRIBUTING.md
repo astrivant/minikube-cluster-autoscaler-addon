@@ -6,9 +6,13 @@ actionlint, and Helm.
 ```bash
 make hooks
 make test
+make vuln
 make lint
 make chart
 ```
+
+`make vuln` checks all Go dependency versions against the Go vulnerability
+database. CI requires this scan to pass before verification and release.
 
 Implementation and tests live in `pkg/addon/`. Explain ownership and concurrency
 decisions inline, and cover lifecycle changes with the fake provisioning backend.

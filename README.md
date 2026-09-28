@@ -2,99 +2,116 @@
 
 [![Go coverage](https://raw.githubusercontent.com/astrivant/minikube-cluster-autoscaler-addon/gh-pages/badges/coverage.svg)](https://github.com/astrivant/minikube-cluster-autoscaler-addon/actions/workflows/ci.yml)
 
-Add demand-driven worker scaling to Minikube. Kubernetes Cluster Autoscaler
-runs in the cluster; a containerized Go provider delegates node operations to
-a native host bridge. Existing nodes form a fixed base pool, and the addon
-manages an elastic worker pool within configured resource limits.
+Give local Kubernetes room to grow. Add workers when Pods need capacity and
+remove idle workers when demand falls. Existing nodes stay in place.
+
+This project supplies the host components for Minikube's `cluster-autoscaler`
+addon. Minikube handles their setup and lifecycle.
 
 ## Contents
 
 - [Quick install](#quick-install)
 - [Scale-outs and scale-downs](#scale-outs-and-scale-downs)
+- [Operations](#operations)
 - [Development](#development)
-- [Architecture](docs/architecture.md), [configuration](docs/configuration.md),
-  [operations](docs/operations.md), and [releases](docs/releases.md)
+- [Architecture](docs/architecture.md) and [configuration](docs/configuration.md)
 
 ## Quick install
 
-Enable the addon on a running cluster:
+Use a Minikube build containing [the addon integration](https://github.com/kubernetes/minikube/pull/23809)
+and a running Kubernetes **1.35.x** cluster. Have Docker running, with Git,
+Go **1.27.1**, Helm and kubectl installed; macOS/Linux also need Bash and jq,
+and Windows uses PowerShell. [Host and cluster setup](docs/minikube-integration.md#installation)
+covers supported drivers and cluster creation.
 
-```bash
+Install the host components once, then enable the addon:
+
+```shell
+git clone --depth 1 https://github.com/astrivant/minikube-cluster-autoscaler-addon.git "$HOME/.minikube/addons/cluster-autoscaler"
 minikube addons enable cluster-autoscaler
 ```
 
-Minikube prepares the provider, generates configuration, starts the host bridge,
-and installs Cluster Autoscaler. Existing nodes stay in the base pool; the addon
-adds up to two workers as workloads need capacity, within the host memory budget.
-Use `-p <profile>` to select another cluster.
+Minikube discovers this installation, builds the components, configures resource
+limits, starts the host bridge and provider, and installs Cluster Autoscaler.
+The default allows up to **two additional workers**, within the host memory budget.
 
-Use the Minikube build with the built-in `cluster-autoscaler` integration and
-this project's addon bundle. During development, the neighboring `../minikube`
-checkout discovers this repository automatically. See [installation and
-integration](docs/minikube-integration.md) for bundle placement and host requirements.
+Check that the deployment is available:
+
+```shell
+kubectl --context minikube -n kube-system get deployment minikube-cluster-autoscaler-addon
+```
+
+The commands use the default `minikube` profile and home directory. For another
+profile, add `-p <profile>` to Minikube commands and use the matching kubectl
+context. [Custom installation paths](docs/minikube-integration.md#installation)
+and [release bundles](docs/releases.md#install-an-archive) are covered separately.
 
 ## Scale-outs and scale-downs
 
-Run the demo from this checkout or an extracted addon bundle on a one-node
-cluster. Three 4 GiB nodes need a 12 GiB node-memory budget; the automatic
-defaults allow this on a host with at least 16 GiB of memory.
+Prove scaling with the included HTTP load demo. Start with one node, 2 CPUs and
+4 GiB per node, and a host with at least 16 GiB of memory. For Docker nodes,
+allocate at least 16 GiB to Docker as well. This gives the defaults room for
+three 4 GiB nodes.
+
+From the installed project directory:
 
 ```bash
-minikube -p minikube addons enable metrics-server
+cd "$HOME/.minikube/addons/cluster-autoscaler"
+minikube addons enable metrics-server
 kubectl --context minikube -n kube-system rollout status deployment/metrics-server --timeout=3m
 helm upgrade --install scale-demo charts/autoscaling-demo \
   --kube-context minikube --namespace autoscaling-demo --create-namespace
 kubectl --context minikube -n autoscaling-demo get hpa,pods -w
-# In another terminal:
+```
+
+In another terminal, watch the cluster scale out:
+
+```shell
 kubectl --context minikube get nodes -L minikube-autoscaler.astrivant.com/pool -w
 ```
 
-The k6 Job sends HTTP traffic to a CPU-bound receiver. Its HPA scales from one
-to three replicas at 50% CPU utilization. Required Pod anti-affinity places one
-receiver per node, so the two pending replicas trigger two elastic workers.
-Expect **three Ready nodes and three Running receiver Pods** once provisioning
-completes. The default load lasts 41 minutes to cover sequential node creation.
+The load generator drives the HPA from one to three receiver Pods. Each receiver
+needs its own node, so the two pending Pods trigger two new workers. Expect
+**three Ready nodes and three Running receivers**. The default load lasts
+41 minutes to allow for sequential worker creation.
 
-Add a k6 options JSON file under `charts/autoscaling-demo/files/profiles/` and
-select it with `--set loadGenerator.profile=files/profiles/my-profile.json`.
-See the [demo guide](docs/demo.md) for profiles, observations, and troubleshooting.
+Remove the demo to release the capacity:
 
-Stop the load and watch the HPA return to one replica:
-
-```bash
-helm upgrade scale-demo charts/autoscaling-demo --kube-context minikube \
-  --namespace autoscaling-demo --reuse-values --set loadGenerator.enabled=false
-```
-
-To remove the demo and let both elastic nodes scale down:
-
-```bash
+```shell
 helm uninstall scale-demo --kube-context minikube --namespace autoscaling-demo
 ```
 
-The autoscaler's idle window is five minutes. [Operations](docs/operations.md)
-covers addon shutdown and recovery.
+Both elastic workers become eligible for removal after the five-minute idle
+window. The original node remains. See the [demo guide](docs/demo.md) for
+file-based load profiles, stopping traffic independently, and troubleshooting.
+
+## Operations
+
+```shell
+minikube addons disable cluster-autoscaler
+```
+
+Disable stops autoscaling and its managed host processes, retaining nodes and
+state. Re-enable with `minikube addons enable cluster-autoscaler`. See
+[operations](docs/operations.md) for logs and recovery,
+[configuration](docs/configuration.md) for limits, and
+[architecture](docs/architecture.md) for components, state, and node ownership.
 
 ## Development
 
 ```bash
 make build
 make test
+make vuln
 make hooks
 make lint
 make chart
 ```
 
-Go implementation and tests live in `pkg/addon/`; upstream protobufs live in
-`pkg/internal/protos/`. See [architecture](docs/architecture.md) for the code map
-and [contributing](CONTRIBUTING.md) for validation conventions.
-[Minikube integration](docs/minikube-integration.md) covers local builds and
-the host component interface.
-
-The Dockerfile has `development` (source build, default) and `production`
-(prebuilt release binary) targets. `scripts/addon.sh build` selects the target
-from the checkout or archive; override it with `MINIKUBE_AUTOSCALER_BUILD_PROFILE`.
-Both targets share a non-root scratch runtime.
+Go code lives in `pkg/addon/`; upstream protobufs live in `pkg/internal/protos/`.
+The Dockerfile has `development` (source build) and `production` (release binary)
+targets. See [contributing](CONTRIBUTING.md), [Minikube integration](docs/minikube-integration.md#local-development),
+and [releases](docs/releases.md) for the development and release workflows.
 
 Licensing: [GPL-3.0](LICENSE), [upstream notices](NOTICE),
 [Apache-2.0](pkg/internal/protos/LICENSE).
