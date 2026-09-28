@@ -86,7 +86,7 @@ jobs:
           [System.Management.Automation.Language.Parser]::ParseFile("$PWD/scripts/addon.ps1", [ref]$tokens, [ref]$parseErrors) | Out-Null
           if ($parseErrors.Count -gt 0) { throw ($parseErrors | Out-String) }
           ./scripts/addon.ps1 -Action help
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ matrix.runner }}
           path: coverage.out
