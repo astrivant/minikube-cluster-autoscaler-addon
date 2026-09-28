@@ -1,51 +1,84 @@
-# Architecture and ownership
+# Architecture
 
 ```text
-Kubernetes Cluster Autoscaler
-            |
-     mutual TLS / externalgrpc
-            |
-Host provider container (Linux, readonly filesystem)
-            |
-     mutual TLS / bounded HTTP
-            |
-Native Go host bridge
-            |
-    scoped minikube + kubectl commands
-            |
-Protected base nodes + journal-owned elastic workers
+Cluster Autoscaler (in-cluster)
+    │ externalgrpc / mutual TLS / host port 50051
+    ▼
+Go provider (Docker container)
+    │ HTTP / mutual TLS / host port 50052
+    ▼
+Go bridge (native host process)
+    │ minikube + kubectl
+    ▼
+Base nodes + elastic workers
 ```
 
-The implementation and its tests live in `pkg/addon/`; generated upstream
-protobufs live in `pkg/internal/protos/`. The root `main.go` passes release
-metadata to the addon CLI.
+## Components
 
-`rpc.go` serves cached group state so VM startup never blocks gRPC deadlines.
-`state.go` records desired workers before asynchronous provisioning begins.
-`bridge.go` independently validates base-node identity, ownership and budget
-outside the container's writable state. `backend.go` invokes native commands
-and verifies drain/storage constraints before deletion. `tls.go` separates
-autoscaler-client and bridge-client credentials. All infrastructure changes
-are serialized and bounded by operation deadlines.
+Cluster Autoscaler makes scheduling and scale-down decisions. The provider
+exposes one worker group, `minikube-workers`, and persists requested capacity
+before reconciling it asynchronously. The native bridge executes node operations
+with the host's Minikube and kubectl access. This lets the same Linux provider
+image work with macOS QEMU and Linux drivers.
 
-The provider container mounts only provider-owned state and its TLS identities.
-The native bridge has the user's Minikube/kubectl access, not root by default.
-Never grant the container Docker, kubeconfig, SSH or libvirt sockets.
+The provider mounts its journal and TLS identities. It runs with a read-only
+root filesystem, dropped capabilities, and bounded CPU, memory, and process
+counts. The bridge holds a separate journal and checks each request against the
+cluster inventory, worker ownership, and resource budget.
 
-Initialization protects the current cluster UID and base-node UIDs. It cannot
-be repeated over existing ownership journals. New workers receive durable random
-provider IDs; neither process adopts arbitrary nodes just because names match.
-Deletion requires matching UID/provider ID, the autoscaler's cordon, no ordinary
-Pods, no PVC-backed DaemonSets, and no local PV affinity to that worker. Minikube's
-own deletion can force-drain, so these independent checks are necessary.
+## Scaling and ownership
 
-There is a short interval between Minikube node registration and applying elastic
-labels/taints. Pinning infrastructure to base nodes protects it during that interval;
-keep application placement explicit too. This is a local test tool, not a cloud
-capacity guarantee or a production infrastructure controller.
+Initialization captures the cluster UID, node UIDs, Minikube sizing, and existing
+nodes as the base pool. The base pool remains fixed for that initialization.
+Elastic workers receive unique provider IDs and move through `queued`,
+`creating`, `ready`, and `deleting` states. Reconciliation runs every five seconds;
+mutations are serialized and respect the configured cooldown and deadline.
 
-Tests use fake provisioning, real gRPC/protobuf serialization, journal I/O,
-timeouts and TLS listeners. CI runs race tests on the four supported host targets.
-It cannot prove real hypervisor, firewall, PDB and volume behavior on every host.
-The inherited macOS VM growth/shrink workflow was tested in Polyad; the standalone
-Linux driver paths require live host validation before relying on them.
+Scale-out records intent before creating a worker. The bridge records ownership,
+waits for readiness, and applies the elastic labels and taint. Existing
+infrastructure controllers are pinned to base nodes during initialization so
+new workers can register before their placement metadata is applied.
+
+For scale-down, Cluster Autoscaler cordons the worker and completes PDB-aware
+Pod eviction. Before deletion, the bridge verifies UID and provider ID, completed
+Pod termination, DaemonSet storage, and persistent-volume affinity. These checks
+precede Minikube's node-delete operation, which can force-drain internally.
+
+Inventory drift or an interrupted operation records a provider error and pauses
+reconciliation. Recovery reconciles both journals with observed infrastructure;
+see [operations](operations.md#recovery).
+
+## State and authentication
+
+The state directory is scoped to a Minikube profile:
+
+| Path | Purpose |
+| --- | --- |
+| `config.json` | Persisted initialization configuration |
+| `provider/state.json` | Desired capacity, worker phases, base inventory, and current error |
+| `provider/config.json`, `provider/tls/` | Container configuration and TLS identities |
+| `host/bridge.json`, `host/tls/` | Native bridge ownership journal and TLS identities |
+| `client/tls/` | Autoscaler client identity copied into a Kubernetes Secret |
+
+File locks enforce one lifecycle owner per journal. Writes use atomic replacement.
+Each link uses a distinct mutual-TLS client role: autoscaler to provider, provider
+to bridge. Certificates have a one-year lifetime and rotation is manual.
+
+## Code map
+
+The root `main.go` passes release metadata into `pkg/addon.Execute`.
+
+| File in `pkg/addon/` | Responsibility |
+| --- | --- |
+| `addon.go` | CLI modes, initialization, servers, and reconciliation loop |
+| `config.go` | Configuration and platform validation |
+| `rpc.go` | Cluster Autoscaler gRPC methods and cached group state |
+| `state.go` | Provider journal, worker transitions, and reconciliation |
+| `bridge.go` | Authenticated host API and independent ownership checks |
+| `backend.go` | Minikube/kubectl operations and inventory/deletion checks |
+| `tls.go` | Certificate issuance and role-specific TLS configuration |
+
+`pkg/internal/protos/` contains the upstream externalgrpc protocol.
+Tests combine a fake provisioning backend with real gRPC serialization, journal
+I/O, and TLS listeners. CI runs race tests on all four host targets; the
+[scale-out procedure](operations.md#scale-outs-and-scale-downs) exercises the host driver.

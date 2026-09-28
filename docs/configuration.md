@@ -6,18 +6,18 @@ JSON is strict: unknown fields and trailing JSON objects are rejected.
 | --- | --- |
 | `profile` | Existing Minikube profile and kubeconfig context; DNS label, at most 40 characters |
 | `namespace` | Existing namespace for the autoscaler and TLS Secret; DNS label |
-| `listen` | Explicit host IP and port `50051`; never a wildcard or multicast IP |
+| `listen` | Specific unicast host IP and port `50051` |
 | `minWorkers` | Minimum additional workers, zero or greater |
 | `maxWorkers` | Maximum additional workers, 1-16 and at least `minWorkers` |
 | `maxTotalMemoryMiB` | Hard ceiling for base plus maximum elastic node memory, at least 4096 MiB |
 | `provisionTimeoutSeconds` | Native operation deadline, 60-3600 seconds |
 | `cooldownSeconds` | Minimum interval between infrastructure changes, at least 10 seconds |
 
-Worker sizing comes from the captured Minikube profile, not Pod requests.
-The memory ceiling excludes host OS, Docker and other applications. All initial
-nodes must match the profile and Kubernetes inventory. Configuration changes
-after initialization are rejected rather than silently changing ownership scope.
-Drain workers and explicitly retire the old configuration before reinitializing.
+Worker sizing comes from the captured Minikube profile. The memory ceiling
+covers base and elastic nodes; budget separately for host and Docker overhead.
+Initialization requires agreement between the Minikube and Kubernetes inventories.
+Configuration is bound to the journals; changes require retiring the existing
+elastic pool and initializing a fresh state directory.
 
 ## Host examples
 
@@ -40,17 +40,17 @@ interfaces, so host firewall rules should restrict it to trusted local clients.
 | `MINIKUBE_AUTOSCALER_CONFIG` | `<state-dir>/config.json`; point at an edited example for first initialization |
 | `MINIKUBE_AUTOSCALER_BINARY` | `<project>/bin/minikube-cluster-autoscaler-addon` |
 | `MINIKUBE_AUTOSCALER_IMAGE` | `minikube-cluster-autoscaler-addon:local` |
+| `MINIKUBE_AUTOSCALER_BUILD_PROFILE` | `development` in source checkouts; `production` in release archives |
 
-The state directory must be absolute and private. Never commit journals,
-credentials, kubeconfigs or VM data. The script creates files with umask 077.
-Leave state outside release directories so upgrading binaries does not discard it.
-Do not edit journals manually or operate multiple add-ons against one cluster.
+Use an absolute state path outside the checkout or release directory. The script
+creates files with umask 077. One addon instance owns each cluster; use the
+[lifecycle commands](operations.md) to manage its journals.
 
 ## Helm values
 
 The wrapper chart is `charts/minikube-cluster-autoscaler-addon`. It uses upstream
 Cluster Autoscaler chart 9.59.0 and image 1.35.0. `provider.address` is mandatory.
-The chart intentionally uses the fixed release name `minikube-cluster-autoscaler-addon`
+The chart uses the fixed release name `minikube-cluster-autoscaler-addon`
 to match its ConfigMap and TLS Secret; the script supplies it consistently.
 Values and their schema expose node placement, resource limits, TLS volumes,
 upstream flags and worker provisioning timeout. Scale-down honors local-storage

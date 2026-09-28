@@ -19,11 +19,12 @@ archive="minikube-cluster-autoscaler-addon_${version#v}_${target_os}_${target_ar
 mkdir -p dist
 release_stage="$(mktemp -d "$PROJECT_ROOT/dist/stage.XXXXXX")"
 package="$release_stage/$archive"
-mkdir -p "$package/bin" "$package/scripts"
+mkdir -p "$package/bin" "$package/scripts" "$package/pkg/internal/protos"
 flags="-s -w -X main.version=$version -X main.commit=$revision -X main.buildDate=$build_date"
 CGO_ENABLED=0 GOOS="$target_os" GOARCH="$target_arch" go build -mod=readonly -trimpath -buildvcs=false -ldflags "$flags" -o "$package/bin/minikube-cluster-autoscaler-addon" .
 CGO_ENABLED=0 GOOS=linux GOARCH="$target_arch" go build -mod=readonly -trimpath -buildvcs=false -ldflags "$flags" -o "$package/bin/provider-linux" .
-cp README.md LICENSE LICENSE.kubernetes NOTICE Dockerfile .dockerignore "$package/"
+cp README.md LICENSE NOTICE Dockerfile .dockerignore "$package/"
+cp pkg/internal/protos/LICENSE "$package/pkg/internal/protos/"
 cp scripts/addon.sh "$package/scripts/"
 cp -R charts examples docs "$package/"
 test -s "$package/charts/minikube-cluster-autoscaler-addon/charts/cluster-autoscaler-9.59.0.tgz"

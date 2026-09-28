@@ -10,7 +10,7 @@ cluster-autoscaler/cloudprovider/externalgrpc/protos/.
 charts/minikube-cluster-autoscaler-addon/provisioningrequests.yaml is the
 ProvisioningRequest CRD from Kubernetes Autoscaler 1.35.0.
 Copyright The Kubernetes Authors. These upstream files retain their Apache-2.0
-license and notices; see LICENSE.kubernetes.
+license and notices; see pkg/internal/protos/LICENSE.
 
 Minikube and Kubernetes are upstream projects. This is an independent addon,
 not an official built-in `minikube addons enable` plugin.

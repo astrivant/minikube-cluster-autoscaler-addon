@@ -1,4 +1,4 @@
-// Package main implements the opt-in Minikube autoscaler and its native VM bridge.
+// Package addon implements the Minikube autoscaler and its native host bridge.
 package addon
 
 import (

@@ -1,58 +1,60 @@
-# Release maintenance
+# Releases
 
-## Pipeline structure
+## Install an archive
 
-Only `.github/workflows/ci.yml` has push/PR/manual triggers. The other workflows
-are `workflow_call` stages, keeping one run link and one connected job diagram.
-Source resolution pins every stage to one commit. Test and build stages run in
-parallel; the `CI verification` aggregate rejects failed, cancelled or skipped
-required stages. It is the stable required-check name for branch protection.
+Download the archive for your host OS (`darwin` or `linux`) and architecture
+(`amd64` or `arm64`) from [Releases](https://github.com/astrivant/minikube-cluster-autoscaler-addon/releases).
+Each contains a native bridge, a same-architecture Linux provider binary, the
+chart and dependency, scripts, examples, and documentation.
 
-- Test: race tests and native CLI smoke checks on Linux/macOS, amd64/arm64;
-  pre-commit, Helm validation and per-platform coverage artifacts.
-- Build: four CGO-free archives, plus native Linux container smoke tests on
-  both architectures. Every archive includes its platform's native bridge and
-  same-architecture Linux provider binary, so downloads need no Go installation.
-- Release: only pushed `vMAJOR.MINOR.PATCH[-prerelease]` tags, after verification.
+With GitHub CLI installed, replace `VERSION` with a published version:
 
-The release job downloads already-built artifacts, verifies all four targets,
-calculates `checksums.txt`, creates generated release notes in a draft, attaches
-all files, then publishes. No rebuild happens during publication. A partially
-uploaded draft can be retried; published assets are never overwritten by a rerun.
-Create a new version to replace a published release. Prereleases do not move the
-latest stable release. GitHub's repository token needs `contents: write` only
-in the release stage. Releases contain no container-registry credentials.
+```bash
+VERSION=0.1.0
+TARGET=darwin_arm64
+ARCHIVE="minikube-cluster-autoscaler-addon_${VERSION}_${TARGET}"
+gh release download "v$VERSION" --repo astrivant/minikube-cluster-autoscaler-addon \
+  --pattern "$ARCHIVE.tar.gz" --pattern checksums.txt
+grep "$ARCHIVE.tar.gz" checksums.txt | shasum -a 256 -c -
+tar -xzf "$ARCHIVE.tar.gz"
+cd "$ARCHIVE"
+bash scripts/addon.sh build
+```
 
-## Before the first tag
+The build command selects the Dockerfile's `production` target and packages the
+Linux binary. Continue with [cluster activation](../README.md#activate-on-a-cluster).
+Keep the state directory outside the extracted archive across upgrades.
 
-1. Create the GitHub repository and push `main`.
-2. Enable Actions and permit reusable workflows and the actions used here.
-3. Require `CI verification` for the default branch and restrict tag pushes to
-   trusted maintainers. Tags execute repository workflow code with release authority.
-4. Run the complete pipeline once. Hosted-runner quotas depend on repository
-   visibility and the account plan.
-5. Push an annotated tag such as `v0.1.0-alpha.1`.
+## Pipeline
 
-`.github/settings.yml` is optional configuration for the Probot Settings app;
-checking it in alone does not configure branch protection. Dependabot monitors
-Go modules, Actions and the source container. Updating Kubernetes dependencies
-requires reviewing the pinned autoscaler minor, CRD and protobuf sources together.
+[CI](../.github/workflows/ci.yml) resolves one source commit and calls reusable
+stages for tests, builds, and publication. `CI verification` aggregates the
+required stages and is the branch-protection check.
 
-## Local rehearsal
+| Stage | Output |
+| --- | --- |
+| Test | Race tests and CLI checks on four host targets; pre-commit, Helm lint/render, and hypothesis-helm reports for Kubernetes 1.35.0 |
+| Build | Four platform archives; development and production container checks on Linux amd64/arm64 |
+| Release | Verified archives, SHA-256 checksums, and generated notes |
+
+Publication consumes the build artifacts from the same run. The release job
+creates a draft, uploads assets, then publishes it. Interrupted draft uploads
+can be retried; changes to published assets use a new version. Prerelease tags
+leave the latest stable release unchanged. Publication uses `GITHUB_TOKEN`
+with `contents: write` in the release stage.
+
+## Publish
 
 ```bash
 make chart
 make release VERSION=v0.1.0-alpha.1 GOOS=darwin GOARCH=arm64
-tar -tzf dist/minikube-cluster-autoscaler-addon_0.1.0-alpha.1_darwin_arm64.tar.gz
+git tag -a v0.1.0-alpha.1 -m 'Release v0.1.0-alpha.1'
+git push origin v0.1.0-alpha.1
 ```
 
-Builds embed version, source commit and source-commit date. Go code is built with
-`-trimpath` and CGO disabled. Archive timestamps are not currently normalized,
-so byte-identical archive reproducibility is not promised. Checksums protect
-download integrity but are not independent signatures. macOS binaries are not
-Developer-ID signed or notarized; use your organization's trusted-distribution
-process if that is required. Nothing in the scripts disables Gatekeeper.
+Tags follow `vMAJOR.MINOR.PATCH[-prerelease]`. Builds embed the version, source
+commit, and commit date with CGO disabled and `-trimpath`. macOS binaries are
+unsigned; archive timestamps use build-time filesystem metadata.
 
-GitHub references: [reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows),
-[runner platforms](https://docs.github.com/en/actions/reference/runners/github-hosted-runners),
-[release creation](https://cli.github.com/manual/gh_release_create).
+Update the autoscaler minor, Helm dependency, CRD, and protobuf sources together.
+Dependabot tracks Go modules, GitHub Actions, and the Go container image.

@@ -1,26 +1,28 @@
 # Contributing
 
-Use the Go version in `.go-version`. Install pre-commit, ShellCheck, actionlint
-and shfmt, then run `make hooks`, `make test`, `make lint` and `make chart`.
-CI pins pre-commit 4.3.0, actionlint 1.7.7 and shfmt 3.14.1.
+Use the Go version in `.go-version`, plus pre-commit, ShellCheck, shfmt,
+actionlint, and Helm.
 
-Keep Go formatting idiomatic and explain ownership, concurrency and safety
-decisions inline. Keep generated Kubernetes protobufs unchanged unless updating
-the pinned upstream protocol. Add fake-backend tests for every lifecycle change;
-unit tests must never call real Minikube to create or delete nodes.
+```bash
+make hooks
+make test
+make lint
+make chart
+```
 
-Shell functions use the project's documentation convention:
+Implementation and tests live in `pkg/addon/`. Explain ownership and concurrency
+decisions inline, and cover lifecycle changes with the fake provisioning backend.
+Use [scale-out validation](docs/operations.md#scale-outs-and-scale-downs) for
+host-driver integration. Update generated files in `pkg/internal/protos/` when
+upgrading the pinned upstream protocol.
+
+Shell functions document arguments and return values:
 
 ```bash
 ##
-# Describe the operation and relevant side effects.
+# Describe the operation.
 # arg1::string -> ret::exit_code
 example() {
     printf '%s\n' "$1"
 }
 ```
-
-Never commit state journals, private keys, tokens, kubeconfigs or cluster data.
-Do not weaken identity checks, memory ceilings or deletion safeguards to make a
-test pass. Document platform limitations rather than presenting cross-compilation
-as proof of live VM support.
