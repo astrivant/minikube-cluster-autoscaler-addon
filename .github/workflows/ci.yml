@@ -20,7 +20,7 @@ jobs:
       version: ${{ steps.source.outputs.version }}
       release: ${{ steps.source.outputs.release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -81,7 +81,7 @@ jobs:
       cancel-in-progress: false
     steps:
       # Match the direct-header credentials used by the badge action's checkout.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.source.outputs.sha }}
       - uses: actions/setup-python@v5
