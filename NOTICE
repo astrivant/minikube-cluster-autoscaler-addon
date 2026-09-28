@@ -1,0 +1,16 @@
+Minikube Cluster Autoscaler Addon
+
+Extracted from https://github.com/astrivant/polyad in September 2026.
+The original project license is retained in LICENSE (GPL-3.0).
+
+internal/protos/ is copied unchanged from Kubernetes Autoscaler,
+tag cluster-autoscaler-1.35.0, directory
+cluster-autoscaler/cloudprovider/externalgrpc/protos/.
+
+charts/minikube-cluster-autoscaler-addon/provisioningrequests.yaml is the
+ProvisioningRequest CRD from Kubernetes Autoscaler 1.35.0.
+Copyright The Kubernetes Authors. These upstream files retain their Apache-2.0
+license and notices; see LICENSE.kubernetes.
+
+Minikube and Kubernetes are upstream projects. This is an independent addon,
+not an official built-in `minikube addons enable` plugin.

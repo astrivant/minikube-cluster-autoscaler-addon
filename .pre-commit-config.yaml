@@ -1,0 +1,51 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(internal/protos/|LICENSE|charts/.*/provisioningrequests.yaml)
+      - id: end-of-file-fixer
+        exclude: ^(internal/protos/|LICENSE|charts/.*/provisioningrequests.yaml)
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+        exclude: ^charts/.*/templates/
+      - id: check-json
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: Go formatting
+        entry: bash scripts/check-format.sh
+        language: system
+        pass_filenames: false
+        types: [go]
+      - id: go-vet
+        name: Go vet
+        entry: go vet ./...
+        language: system
+        pass_filenames: false
+        files: '(\.go$|^go\.(mod|sum)$)'
+      - id: go-test
+        name: Go tests
+        entry: go test ./...
+        language: system
+        pass_filenames: false
+        files: '(\.go$|^go\.(mod|sum)$)'
+      - id: shellcheck
+        name: ShellCheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+      - id: shfmt
+        name: Shell formatting
+        entry: shfmt -d -i 4 -ci
+        language: system
+        types: [shell]
+      - id: actionlint
+        name: GitHub workflow validation
+        entry: actionlint
+        language: system
+        pass_filenames: false
+        files: ^\.github/workflows/.*\.yml$

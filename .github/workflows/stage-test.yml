@@ -1,0 +1,74 @@
+name: Test stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  go:
+    name: Go / ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: .go-version
+          cache: true
+      - run: go mod verify
+      - run: go test -race -coverprofile=coverage.out ./...
+      - run: go vet ./...
+      - name: Check native CLI
+        run: |
+          go build -mod=readonly -o bin/minikube-cluster-autoscaler-addon .
+          bin/minikube-cluster-autoscaler-addon --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.runner }}
+          path: coverage.out
+          if-no-files-found: error
+
+  lint:
+    name: Pre-commit and chart
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: .go-version
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: azure/setup-helm@v4.3.0
+        with:
+          version: v3.19.0
+      - name: Install pinned validation tools
+        run: |
+          pip install pre-commit==4.3.0
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          go install mvdan.cc/sh/v3/cmd/shfmt@v3.14.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          shellcheck --version
+      - run: pre-commit run --all-files
+      - run: bash scripts/chart-dependencies.sh
+      - run: helm lint charts/minikube-cluster-autoscaler-addon --set provider.address=192.168.105.1:50051 --kube-version 1.35.0
+      - name: Render standalone configuration
+        env:
+          MINIKUBE_AUTOSCALER_CONFIG: examples/config.macos.json
+        run: bash scripts/addon.sh render > /dev/null
+      - name: Reject changed locks or generated files
+        run: git diff --exit-code

@@ -1,0 +1,80 @@
+name: Minikube autoscaler pipeline
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: minikube-autoscaler-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  source:
+    name: Resolve source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+      version: ${{ steps.source.outputs.version }}
+      release: ${{ steps.source.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          version="v0.0.0-dev.${GITHUB_RUN_NUMBER}"
+          release=false
+          if [[ "$EVENT_NAME" == push && "$GITHUB_REF" == refs/tags/* ]]; then
+            version=$(bash scripts/validate-tag.sh "${GITHUB_REF#refs/tags/}")
+            test "$(git rev-parse HEAD)" = "$(git rev-parse "$GITHUB_REF^{commit}")"
+            release=true
+          fi
+          {
+            echo "sha=$(git rev-parse HEAD)"
+            echo "version=$version"
+            echo "release=$release"
+          } >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Test
+    needs: source
+    uses: ./.github/workflows/stage-test.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+
+  build:
+    name: Build
+    needs: source
+    uses: ./.github/workflows/stage-build.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+      version: ${{ needs.source.outputs.version }}
+
+  verified:
+    name: CI verification
+    if: always()
+    needs: [source, test, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every stage to succeed
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: jq -e 'all(.[]; .result == "success")' <<< "$RESULTS"
+
+  release:
+    name: Release
+    needs: [source, verified]
+    if: needs.verified.result == 'success' && needs.source.outputs.release == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/stage-release.yml
+    with:
+      sha: ${{ needs.source.outputs.sha }}
+      version: ${{ needs.source.outputs.version }}

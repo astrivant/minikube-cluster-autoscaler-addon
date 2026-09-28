@@ -1,0 +1,63 @@
+name: Build stage
+on:
+  workflow_call:
+    inputs:
+      sha:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  archives:
+    name: Archive / ${{ matrix.os }} / ${{ matrix.arch }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [darwin, linux]
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: .go-version
+      - uses: azure/setup-helm@v4.3.0
+        with:
+          version: v3.19.0
+      - run: bash scripts/chart-dependencies.sh
+      - name: Build versioned archive
+        env:
+          VERSION: ${{ inputs.version }}
+          TARGET_OS: ${{ matrix.os }}
+          TARGET_ARCH: ${{ matrix.arch }}
+        run: bash scripts/build-release.sh "$VERSION" "$TARGET_OS" "$TARGET_ARCH"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  container:
+    name: Container / ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - name: Build and inspect restricted Linux provider
+        run: |
+          docker build -t minikube-cluster-autoscaler-addon:ci .
+          docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges minikube-cluster-autoscaler-addon:ci --version

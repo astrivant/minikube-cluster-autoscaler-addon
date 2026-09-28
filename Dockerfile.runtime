@@ -1,0 +1,7 @@
+# Release archives include this Linux binary, even in the macOS downloads.
+FROM scratch
+COPY bin/provider-linux /provider
+USER 65532:65532
+EXPOSE 50051
+ENTRYPOINT ["/provider"]
+CMD ["--mode=serve", "--config=/state/config.json", "--state-dir=/state"]

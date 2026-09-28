@@ -1,0 +1,38 @@
+# Applying this explicit opt-in workload requests an elastic VM without busy-looping.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minikube-elastic-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demand
+  namespace: minikube-elastic-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minikube-elastic-demand
+  template:
+    metadata:
+      labels:
+        app: minikube-elastic-demand
+    spec:
+      nodeSelector:
+        minikube-autoscaler.astrivant.com/pool: elastic
+      tolerations:
+        - key: minikube-autoscaler.astrivant.com/elastic
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: reservation
+          image: registry.k8s.io/pause:3.10
+          resources:
+            requests:
+              cpu: 1200m
+              memory: 1Gi
+            limits:
+              cpu: 1200m
+              memory: 1Gi
