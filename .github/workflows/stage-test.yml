@@ -8,6 +8,30 @@ on:
 permissions:
   contents: read
 jobs:
+  helm-properties:
+    name: Helm properties / Kubernetes 1.35.0
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - name: Test chart with hypothesis-helm
+        uses: astrivant/hypothesis-helm@dbc07922420fa38ddeead026f7c857eeaae66910 # v1.3.5
+        with:
+          chart: charts/minikube-cluster-autoscaler-addon
+          values: ${{ github.workspace }}/.github/hypothesis-helm-values.yaml
+          kube-version: '1.35.0'
+          schema-version: '1.35.0'
+          build-dependencies: 'true'
+          seed: '20260927'
+          chart-timeout: 3m
+          scan-timeout: 5m
+          fail: error
+          report: 'true'
+          pca-samples: '0'
+
   go:
     name: Go / ${{ matrix.runner }}
     strategy:
