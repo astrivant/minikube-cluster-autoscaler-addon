@@ -1,0 +1,28 @@
+workload:
+  image: python:3.13-alpine
+  workMilliseconds: 100
+  resources:
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 128Mi
+hpa:
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 50
+  scaleDownStabilizationSeconds: 60
+loadGenerator:
+  enabled: true
+  image: grafana/k6:1.3.0
+  # Add JSON profiles under files/profiles/ and select one here.
+  profile: files/profiles/default.json
+  activeDeadlineSeconds: 3600
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi

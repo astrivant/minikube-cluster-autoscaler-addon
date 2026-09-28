@@ -1,3 +1,5 @@
+default_language_version:
+  python: python3.13
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -13,8 +15,45 @@ repos:
         args: [--allow-multiple-documents]
         exclude: ^charts/.*/templates/
       - id: check-json
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: [--config=pyproject.toml]
+        types: [python]
+  - repo: https://github.com/jsh9/pydoclint
+    rev: 0.6.6
+    hooks:
+      - id: pydoclint
+        args: [--config=pyproject.toml]
+        types: [python]
   - repo: local
     hooks:
+      - id: docstring-layout
+        name: Multiline docstring layout
+        entry: python scripts/check-docstrings.py
+        language: python
+        types: [python]
+      - id: ruff-check
+        name: Ruff lint
+        entry: ruff check
+        language: python
+        additional_dependencies: [ruff==0.15.22]
+        types: [python]
+      - id: ruff-format
+        name: Ruff format
+        entry: ruff format --check
+        language: python
+        additional_dependencies: [ruff==0.15.22]
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: python
+        additional_dependencies: [mypy==1.20.2, types-PyYAML==6.0.12.20260906]
+        types: [python]
+        pass_filenames: false
+        always_run: true
       - id: gofmt
         name: Go formatting
         entry: bash scripts/check-format.sh

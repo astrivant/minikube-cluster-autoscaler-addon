@@ -90,6 +90,8 @@ jobs:
       - run: pre-commit run --all-files
       - run: bash scripts/chart-dependencies.sh
       - run: helm lint charts/minikube-cluster-autoscaler-addon --set provider.address=192.168.105.1:50051 --kube-version 1.35.0
+      - run: helm lint charts/autoscaling-demo --kube-version 1.35.0
+      - run: python3 scripts/test-demo.py
       - name: Render standalone configuration
         env:
           MINIKUBE_AUTOSCALER_CONFIG: examples/config.macos.json

@@ -18,22 +18,17 @@ appear in its terminal; provider logs are available through
 
 ## Scale-outs and scale-downs
 
-Workloads use the elastic pool label and toleration defined in
-[`examples/demand.yaml`](../examples/demand.yaml). Cluster Autoscaler scales from
-Pod requests and scheduling constraints. Worker size comes from the captured
-Minikube profile.
+The [HTTP load demo](demo.md) exercises the complete path from traffic to HPA
+replicas to elastic workers. Run it with the commands in the
+[README](../README.md#scale-outs-and-scale-downs).
 
-```bash
-kubectl --context minikube apply -f examples/demand.yaml
-kubectl --context minikube -n minikube-elastic-demo rollout status deployment/demand --timeout=16m
-kubectl --context minikube get nodes -L minikube-autoscaler.astrivant.com/pool
-kubectl --context minikube -n minikube-elastic-demo scale deployment/demand --replicas=0
-```
+Cluster Autoscaler acts on Pod requests and scheduling constraints. Worker size
+comes from the captured Minikube profile. Default flags set a five-minute idle
+window and one concurrent deletion. Local storage and system Pods affect
+scale-down eligibility.
 
-Default chart flags set a five-minute idle window and one concurrent deletion.
-Local storage and system Pods affect scale-down eligibility. The example
-configuration allows two elastic workers alongside three 4 GiB base nodes,
-within a 20 GiB node-memory ceiling.
+For a scheduling-only check, `examples/demand.yaml` creates a resource reservation
+in the elastic pool without an HTTP workload.
 
 ## Disable and restart
 

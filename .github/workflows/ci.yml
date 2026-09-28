@@ -68,6 +68,62 @@ jobs:
           RESULTS: ${{ toJSON(needs) }}
         run: jq -e 'all(.[]; .result == "success")' <<< "$RESULTS"
 
+  coverage-badge:
+    name: Publish coverage badge
+    needs: [source, test]
+    if: ${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: coverage-badge
+      cancel-in-progress: false
+    steps:
+      # Match the direct-header credentials used by the badge action's checkout.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: .cache/coverage-shards
+      - name: Combine platform coverage
+        run: |
+          for runner in ubuntu-24.04 ubuntu-24.04-arm macos-15 macos-15-intel; do
+              test -s ".cache/coverage-shards/coverage-$runner/coverage.out"
+          done
+          python scripts/coverage-summary.py .cache/coverage-shards/coverage-*/coverage.out >> "$GITHUB_STEP_SUMMARY"
+      - name: Check whether the badge percentage changed
+        id: badge
+        run: |
+          previous="$RUNNER_TEMP/previous-coverage.svg"
+          if [[ -n "$(git ls-remote --heads origin refs/heads/gh-pages)" ]]; then
+              git fetch origin gh-pages
+              git show FETCH_HEAD:badges/coverage.svg >"$previous" || truncate -s 0 "$previous"
+          else
+              touch "$previous"
+          fi
+          python - "$previous" >>"$GITHUB_OUTPUT" <<'PYTHON'
+          import json
+          import sys
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          percent = json.loads(Path("coverage.json").read_text())["totals"]["percent_covered_display"]
+          previous = Path(sys.argv[1]).read_text()
+          labels = set(ElementTree.fromstring(previous).itertext()) if previous else set()
+          print(f"changed={str(f'{percent}%' not in labels).lower()}")
+          PYTHON
+      - uses: we-cli/coverage-badge-action@8a0b6ee05f6dd0f294089cbe7a848452a2b43eef
+        if: steps.badge.outputs.changed == 'true'
+
   release:
     name: Release
     needs: [source, verified]

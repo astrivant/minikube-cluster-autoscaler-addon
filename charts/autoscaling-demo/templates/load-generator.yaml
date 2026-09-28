@@ -1,0 +1,56 @@
+{{- if .Values.loadGenerator.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "demo.name" . }}-load
+  labels:
+    {{- include "demo.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: {{ .Values.loadGenerator.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "demo.labels" . | nindent 8 }}
+        app.kubernetes.io/component: load-generator
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      nodeSelector:
+        minikube-autoscaler.astrivant.com/pool: base
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: k6
+          image: {{ .Values.loadGenerator.image | quote }}
+          args: [run, /demo/load.js]
+          env:
+            - name: TARGET_URL
+              value: http://{{ include "demo.name" . }}
+            - name: K6_SETUP_TIMEOUT
+              value: 10m
+            - name: K6_NO_USAGE_REPORT
+              value: "true"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            {{- toYaml .Values.loadGenerator.resources | nindent 12 }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /demo
+              readOnly: true
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "demo.name" . }}
+{{- end }}

@@ -106,12 +106,15 @@ func initialize(c Config, s Snapshot) (State, error) {
 			return st, fmt.Errorf("base VM %s is missing or not Ready", name)
 		}
 		st.Base[name] = string(n.UID)
-		if !entry.ControlPlane {
+		// A one-node cluster supplies an observed resource template from its
+		// control plane. Prefer a worker when present; template() removes roles,
+		// identity, and taints before advertising future worker capacity.
+		if !entry.ControlPlane || st.Template.Name == "" {
 			st.Template = *n.DeepCopy()
 		}
 	}
 	if st.Template.Name == "" {
-		return st, fmt.Errorf("initialize with at least one Ready base worker for accurate allocatable resources")
+		return st, fmt.Errorf("initialize with at least one Ready base node for allocatable resources")
 	}
 	return st, nil
 }

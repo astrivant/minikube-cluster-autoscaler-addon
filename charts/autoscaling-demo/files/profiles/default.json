@@ -1,0 +1,9 @@
+{
+  "stages": [
+    {"duration": "30s", "target": 12},
+    {"duration": "40m", "target": 12},
+    {"duration": "30s", "target": 0}
+  ],
+  "noConnectionReuse": true,
+  "discardResponseBodies": true
+}

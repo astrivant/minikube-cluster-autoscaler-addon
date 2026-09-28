@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "demo.name" . }}
+  labels:
+    {{- include "demo.labels" . | nindent 4 }}
+data:
+  server.py: |
+    {{- .Files.Get "files/server.py" | nindent 4 }}
+  load.js: |
+    {{- .Files.Get "files/load.js" | nindent 4 }}
+  profile.json: |
+    {{- $profile := required "loadGenerator.profile must name a nonempty file packaged under files/" (.Files.Get .Values.loadGenerator.profile) }}
+    {{- $parsed := mustFromJson $profile }}
+    {{- if not (kindIs "map" $parsed) }}
+      {{- fail "loadGenerator.profile must contain a JSON object of k6 options" }}
+    {{- end }}
+    {{- $profile | nindent 4 }}

@@ -43,6 +43,10 @@ can be retried; changes to published assets use a new version. Prerelease tags
 leave the latest stable release unchanged. Publication uses `GITHUB_TOKEN`
 with `contents: write` in the release stage.
 
+Default-branch pushes combine statement coverage across all four host targets and
+publish `gh-pages/badges/coverage.svg`. Generated protobufs are excluded. The
+README badge links to the CI run history.
+
 ## Publish
 
 ```bash

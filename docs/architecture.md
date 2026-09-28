@@ -29,7 +29,10 @@ cluster inventory, worker ownership, and resource budget.
 ## Scaling and ownership
 
 Initialization captures the cluster UID, node UIDs, Minikube sizing, and existing
-nodes as the base pool. The base pool remains fixed for that initialization.
+nodes as the base pool. With one node, the worker template uses observed
+control-plane capacity; with existing workers, it prefers a worker. The template
+strips node identity, role labels, and taints before advertising elastic capacity.
+The base pool remains fixed for that initialization.
 Elastic workers receive unique provider IDs and move through `queued`,
 `creating`, `ready`, and `deleting` states. Reconciliation runs every five seconds;
 mutations are serialized and respect the configured cooldown and deadline.

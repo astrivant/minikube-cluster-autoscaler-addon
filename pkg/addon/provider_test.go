@@ -47,7 +47,10 @@ func (f *fakeBackend) Add(_ context.Context, w Worker, _ int) error {
 	if f.addError != nil {
 		return f.addError
 	}
-	base := f.snapshot.Nodes["minikube-m02"]
+	base, ok := f.snapshot.Nodes["minikube-m02"]
+	if !ok {
+		base = f.snapshot.Nodes["minikube"]
+	}
 	n := base.DeepCopy()
 	n.Name = w.Name
 	n.UID = types.UID("uid-" + w.Name)
@@ -417,5 +420,59 @@ func TestConfigRejectsUnsafeInputsAndChanges(t *testing.T) {
 	c.MaxWorkers++
 	if _, err := loadState(p.path, c); err == nil {
 		t.Fatal("configuration silently changed")
+	}
+}
+
+func TestSingleNodeClusterScalesToTwoWorkers(t *testing.T) {
+	p, f := fixture(t)
+	delete(f.snapshot.Nodes, "minikube-m02")
+	f.snapshot.Profile.Nodes = f.snapshot.Profile.Nodes[:1]
+	base := f.snapshot.Nodes["minikube"]
+	base.Labels["node-role.kubernetes.io/control-plane"] = ""
+	base.Spec.Taints = []v1.Taint{{Key: "node-role.kubernetes.io/control-plane", Effect: v1.TaintEffectNoSchedule}}
+	f.snapshot.Nodes[base.Name] = base
+	c := p.state.Config
+	c.MaxTotalMemoryMiB = 3 * 4096
+	st, err := initialize(c, f.snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tooSmall := c
+	tooSmall.MaxTotalMemoryMiB--
+	if _, err := initialize(tooSmall, f.snapshot); err == nil {
+		t.Fatal("accepted insufficient memory for two additional workers")
+	}
+	n := template(st)
+	if n.Status.Allocatable.Cpu().Cmp(base.Status.Allocatable[v1.ResourceCPU]) != 0 || n.Labels[poolLabel] != "elastic" {
+		t.Fatal("single-node template lost observed capacity or elastic placement")
+	}
+	if _, found := n.Labels["node-role.kubernetes.io/control-plane"]; found || len(n.Spec.Taints) != 1 || n.Spec.Taints[0].Key != elasticTaint {
+		t.Fatal("worker template retained control-plane scheduling metadata")
+	}
+	if err := p.commit(st); err != nil {
+		t.Fatal(err)
+	}
+	if err := p.increase(2); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		p.state.LastChange = time.Time{}
+		if err := p.reconcile(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if f.adds != 2 || len(f.snapshot.Nodes) != 3 || len(p.state.Base) != 1 {
+		t.Fatalf("expected one base plus two elastic nodes: %+v", p.state)
+	}
+	for _, worker := range p.state.Workers {
+		if worker.Phase != "ready" {
+			t.Fatalf("worker was not ready: %+v", worker)
+		}
+	}
+	r := &rpcServer{p: p}
+	if _, err := r.NodeGroupDeleteNodes(context.Background(), &pb.NodeGroupDeleteNodesRequest{
+		Id: groupID, Nodes: []*pb.ExternalGrpcNode{{Name: base.Name, ProviderID: base.Spec.ProviderID}},
+	}); err == nil {
+		t.Fatal("accepted deletion of the single base node")
 	}
 }

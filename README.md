@@ -1,15 +1,13 @@
 # Minikube Cluster Autoscaler Addon
 
-[![Pipeline](https://github.com/astrivant/minikube-cluster-autoscaler-addon/actions/workflows/ci.yml/badge.svg)](https://github.com/astrivant/minikube-cluster-autoscaler-addon/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/astrivant/minikube-cluster-autoscaler-addon?include_prereleases)](https://github.com/astrivant/minikube-cluster-autoscaler-addon/releases)
+[![Go coverage](https://raw.githubusercontent.com/astrivant/minikube-cluster-autoscaler-addon/gh-pages/badges/coverage.svg)](https://github.com/astrivant/minikube-cluster-autoscaler-addon/actions/workflows/ci.yml)
 
 Add demand-driven worker scaling to Minikube. Kubernetes Cluster Autoscaler
 runs in the cluster; a containerized Go provider delegates node operations to
 a native host bridge. Existing nodes form a fixed base pool, and the addon
 manages an elastic worker pool within configured resource limits.
 
-Extracted from [Polyad](https://github.com/astrivant/polyad) as a standalone addon
-for local clusters. Operate it through `scripts/addon.sh`.
+Operate the addon through `scripts/addon.sh`.
 
 ## Contents
 
@@ -37,8 +35,9 @@ provide prebuilt binaries when a release is available.
 
 ## Activate on a cluster
 
-Use Kubernetes **1.35.x**, one control-plane node, and at least one Ready base
-worker. The chart pins Cluster Autoscaler **1.35.0** and upstream chart **9.59.0**.
+Use Kubernetes **1.35.x** and one Ready control-plane node. Existing workers
+join the fixed base pool. The chart pins Cluster Autoscaler **1.35.0** and
+upstream chart **9.59.0**.
 
 | Host | Architecture | Driver | Configuration |
 | --- | --- | --- | --- |
@@ -50,7 +49,7 @@ For an existing compatible cluster, use its profile below. To create one on macO
 
 ```bash
 minikube start -p minikube --driver=qemu2 --network=socket_vmnet \
-  --kubernetes-version=v1.35.0 --nodes=3 --memory=4096 --cpus=2
+  --kubernetes-version=v1.35.0 --nodes=1 --memory=4096 --cpus=2
 ```
 
 On Linux, use the driver from the table and omit `--network`. Driver setup:
@@ -85,16 +84,45 @@ Subsequent commands use the configuration persisted by `init`.
 
 ## Scale-outs and scale-downs
 
+Run the demo after activating the addon on a one-node cluster. Use the example
+limits (`minWorkers: 0`, `maxWorkers: 2`) and at least 12 GiB of node-memory
+budget for three 4 GiB nodes.
+
 ```bash
-kubectl --context minikube apply -f examples/demand.yaml
-kubectl --context minikube -n minikube-elastic-demo rollout status deployment/demand --timeout=16m
-kubectl --context minikube get nodes -L minikube-autoscaler.astrivant.com/pool
-kubectl --context minikube -n minikube-elastic-demo scale deployment/demand --replicas=0
+minikube -p minikube addons enable metrics-server
+kubectl --context minikube -n kube-system rollout status deployment/metrics-server --timeout=3m
+helm upgrade --install scale-demo charts/autoscaling-demo \
+  --kube-context minikube --namespace autoscaling-demo --create-namespace
+kubectl --context minikube -n autoscaling-demo get hpa,pods -w
+# In another terminal:
+kubectl --context minikube get nodes -L minikube-autoscaler.astrivant.com/pool -w
 ```
 
-The example uses resource requests and elastic-pool placement to trigger
-scale-out. Scale-down follows the configured idle window, five minutes by default.
-See [operations](docs/operations.md) for placement, shutdown, and recovery.
+The k6 Job sends HTTP traffic to a CPU-bound receiver. Its HPA scales from one
+to three replicas at 50% CPU utilization. Required Pod anti-affinity places one
+receiver per node, so the two pending replicas trigger two elastic workers.
+Expect **three Ready nodes and three Running receiver Pods** once provisioning
+completes. The default load lasts 41 minutes to cover sequential node creation.
+
+Add a k6 options JSON file under `charts/autoscaling-demo/files/profiles/` and
+select it with `--set loadGenerator.profile=files/profiles/my-profile.json`.
+See the [demo guide](docs/demo.md) for profiles, observations, and troubleshooting.
+
+Stop the load and watch the HPA return to one replica:
+
+```bash
+helm upgrade scale-demo charts/autoscaling-demo --kube-context minikube \
+  --namespace autoscaling-demo --reuse-values --set loadGenerator.enabled=false
+```
+
+To remove the demo and let both elastic nodes scale down:
+
+```bash
+helm uninstall scale-demo --kube-context minikube --namespace autoscaling-demo
+```
+
+The autoscaler's idle window is five minutes. [Operations](docs/operations.md)
+covers addon shutdown and recovery.
 
 ## Development
 
