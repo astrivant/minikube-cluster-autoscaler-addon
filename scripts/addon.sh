@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Repository-local Minikube Helm addon, with a containerized host provider.
+# Host component hooks for the built-in Minikube Cluster Autoscaler addon.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,13 +14,13 @@ CONFIG="${MINIKUBE_AUTOSCALER_CONFIG:-$STATE_DIR/config.json}"
 CHART="$PROJECT_ROOT/charts/minikube-cluster-autoscaler-addon"
 
 ##
-# Show the addon lifecycle and its explicit activation requirements.
+# Show host component hooks and development commands.
 # -> ret::exit_code
 usage() {
     cat <<'EOF'
 Usage: scripts/addon.sh COMMAND
 
-  build    Build the optional native bridge and host provider container.
+  build    Build the native bridge and host provider container.
   init     Capture/protect existing VMs and create private journals and TLS identities.
   bridge   Run the native host VM bridge in this terminal; stop with Ctrl-C.
   enable   Start the provider container and install Cluster Autoscaler through Helm.
@@ -33,7 +33,8 @@ Usage: scripts/addon.sh COMMAND
 init requires MINIKUBE_AUTOSCALER_CONFIG pointing to an edited examples/config.macos.json or examples/config.linux.json.
 build accepts MINIKUBE_AUTOSCALER_BUILD_PROFILE=development|production (default: development in source checkouts, production in releases).
 The native bridge must be running before enable; Docker cannot control macOS HVF directly.
-This is a repository-local addon, not a compiled `minikube addons enable` extension.
+Use minikube addons enable cluster-autoscaler for setup and managed bridge startup.
+The built-in addon calls these hooks; direct invocation supports development and diagnostics.
 EOF
 }
 
@@ -201,6 +202,6 @@ case "$1" in
             docker stop --timeout 30 "$CONTAINER" >/dev/null
             docker rm "$CONTAINER" >/dev/null
         fi
-        printf '%s\n' 'Addon disabled. VMs, base placement, TLS Secret, and journals were retained. Stop the bridge with Ctrl-C.'
+        printf '%s\n' 'Addon disabled. VMs, base placement, TLS Secret, and journals were retained.'
         ;;
 esac

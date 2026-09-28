@@ -7,12 +7,9 @@ runs in the cluster; a containerized Go provider delegates node operations to
 a native host bridge. Existing nodes form a fixed base pool, and the addon
 manages an elastic worker pool within configured resource limits.
 
-Operate the addon through `scripts/addon.sh`.
-
 ## Contents
 
 - [Quick install](#quick-install)
-- [Activate on a cluster](#activate-on-a-cluster)
 - [Scale-outs and scale-downs](#scale-outs-and-scale-downs)
 - [Development](#development)
 - [Architecture](docs/architecture.md), [configuration](docs/configuration.md),
@@ -20,73 +17,27 @@ Operate the addon through `scripts/addon.sh`.
 
 ## Quick install
 
-With Git, Go 1.27.1, Docker with BuildKit, Helm, kubectl, Minikube, and jq installed:
+Enable the addon on a running cluster:
 
 ```bash
-git clone https://github.com/astrivant/minikube-cluster-autoscaler-addon.git
-cd minikube-cluster-autoscaler-addon
-bash scripts/addon.sh build
+minikube addons enable cluster-autoscaler
 ```
 
-This builds the native bridge and provider image. On macOS, `brew bundle`
-installs the project tools; start Docker Desktop and `socket_vmnet` before
-activating the addon. [Release archives](docs/releases.md#install-an-archive)
-provide prebuilt binaries when a release is available.
+Minikube prepares the provider, generates configuration, starts the host bridge,
+and installs Cluster Autoscaler. Existing nodes stay in the base pool; the addon
+adds up to two workers as workloads need capacity, within the host memory budget.
+Use `-p <profile>` to select another cluster.
 
-## Activate on a cluster
-
-Use Kubernetes **1.35.x** and one Ready control-plane node. Existing workers
-join the fixed base pool. The chart pins Cluster Autoscaler **1.35.0** and
-upstream chart **9.59.0**.
-
-| Host | Architecture | Driver | Configuration |
-| --- | --- | --- | --- |
-| macOS | arm64, amd64 | `qemu2` with `socket_vmnet` | `examples/config.macos.json` |
-| Linux | amd64 | `kvm2` | `examples/config.linux.json` |
-| Linux | arm64 | `docker` (container nodes) | `examples/config.linux-arm64.json` |
-
-For an existing compatible cluster, use its profile below. To create one on macOS:
-
-```bash
-minikube start -p minikube --driver=qemu2 --network=socket_vmnet \
-  --kubernetes-version=v1.35.0 --nodes=1 --memory=4096 --cpus=2
-```
-
-On Linux, use the driver from the table and omit `--network`. Driver setup:
-[QEMU](https://minikube.sigs.k8s.io/docs/drivers/qemu/),
-[KVM2](https://minikube.sigs.k8s.io/docs/drivers/kvm2/).
-
-Copy the configuration for your platform, set `profile` to the cluster name,
-and set `listen` to the host IP reachable from its nodes, on port 50051.
-Set the worker and memory limits for your host; see [configuration](docs/configuration.md).
-
-```bash
-cp examples/config.macos.json /tmp/minikube-autoscaler.json
-# Edit /tmp/minikube-autoscaler.json for your cluster and host.
-export MINIKUBE_AUTOSCALER_PROFILE=minikube
-export MINIKUBE_AUTOSCALER_CONFIG=/tmp/minikube-autoscaler.json
-bash scripts/addon.sh init
-bash scripts/addon.sh bridge
-```
-
-`init` records the base pool and pins existing Deployments and StatefulSets in
-`kube-system` and the configured namespace to it. The bridge stays running in
-this terminal. In another terminal, from the project directory:
-
-```bash
-export MINIKUBE_AUTOSCALER_PROFILE=minikube
-bash scripts/addon.sh enable
-bash scripts/addon.sh test
-bash scripts/addon.sh status
-```
-
-Subsequent commands use the configuration persisted by `init`.
+Use the Minikube build with the built-in `cluster-autoscaler` integration and
+this project's addon bundle. During development, the neighboring `../minikube`
+checkout discovers this repository automatically. See [installation and
+integration](docs/minikube-integration.md) for bundle placement and host requirements.
 
 ## Scale-outs and scale-downs
 
-Run the demo after activating the addon on a one-node cluster. Use the example
-limits (`minWorkers: 0`, `maxWorkers: 2`) and at least 12 GiB of node-memory
-budget for three 4 GiB nodes.
+Run the demo from this checkout or an extracted addon bundle on a one-node
+cluster. Three 4 GiB nodes need a 12 GiB node-memory budget; the automatic
+defaults allow this on a host with at least 16 GiB of memory.
 
 ```bash
 minikube -p minikube addons enable metrics-server
@@ -137,6 +88,8 @@ make chart
 Go implementation and tests live in `pkg/addon/`; upstream protobufs live in
 `pkg/internal/protos/`. See [architecture](docs/architecture.md) for the code map
 and [contributing](CONTRIBUTING.md) for validation conventions.
+[Minikube integration](docs/minikube-integration.md) covers local builds and
+the host component interface.
 
 The Dockerfile has `development` (source build, default) and `production`
 (prebuilt release binary) targets. `scripts/addon.sh build` selects the target

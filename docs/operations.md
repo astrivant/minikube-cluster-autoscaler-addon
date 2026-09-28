@@ -1,8 +1,9 @@
 # Operations
 
-Run commands from the checkout or extracted archive. Set
-`MINIKUBE_AUTOSCALER_PROFILE` when using a profile other than `minikube`.
-The native bridge must be running while the provider is enabled.
+Use `minikube addons enable/disable cluster-autoscaler` to manage the addon.
+Add `-p <profile>` for another cluster. Run diagnostic scripts from the checkout
+or extracted bundle, setting `MINIKUBE_AUTOSCALER_PROFILE` to the same profile
+and `MINIKUBE_AUTOSCALER_STATE_DIR` if using a custom state path.
 
 ## Status
 
@@ -12,8 +13,8 @@ bash scripts/addon.sh test
 ```
 
 `status` shows the provider journal, container status, and node pools. `test`
-authenticates to the provider and checks the autoscaler rollout. Bridge logs
-appear in its terminal; provider logs are available through
+authenticates to the provider and checks the autoscaler rollout. Minikube writes bridge logs
+to `<state-dir>/bridge.log`; provider logs are available through
 `docker logs minikube-cluster-autoscaler-addon-<profile>`.
 
 ## Scale-outs and scale-downs
@@ -33,14 +34,12 @@ in the elastic pool without an HTTP workload.
 ## Disable and restart
 
 ```bash
-bash scripts/addon.sh disable
-# Stop the bridge with Ctrl-C.
+minikube addons disable cluster-autoscaler
 ```
 
-Disable removes the Helm release and provider container. It retains nodes,
+Disable removes the Helm release and provider container and stops the managed bridge. It retains nodes,
 journals, credentials, base placement, the client TLS Secret, and the
-ProvisioningRequest CRD. To restart, run `bridge` in one terminal and `enable`
-in another.
+ProvisioningRequest CRD. To restart, run `minikube addons enable cluster-autoscaler`.
 
 ## Recovery
 
@@ -49,12 +48,10 @@ in `provider/state.json`. Inspect it with `status`, then stop both processes
 before reconciling the reported node or configuration discrepancy.
 
 ```bash
-bash scripts/addon.sh disable
-# Stop the bridge and resolve the reported discrepancy.
+minikube addons disable cluster-autoscaler
+# Resolve the reported discrepancy.
 bash scripts/addon.sh resume
-bash scripts/addon.sh bridge
-# In another terminal:
-bash scripts/addon.sh enable
+minikube addons enable cluster-autoscaler
 ```
 
 `resume` verifies the live inventory and bridge ownership before completing an

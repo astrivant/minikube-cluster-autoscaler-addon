@@ -128,7 +128,7 @@ func (b commands) Snapshot(ctx context.Context) (Snapshot, error) {
 }
 
 // supportedDriver keeps the upstream Linux/arm64 KVM limitation explicit.
-// Docker is accepted only there, not as a silent substitute on VM-capable hosts.
+// Windows uses Docker Desktop with Linux containers.
 func supportedDriver(goos, goarch, driver, network string) error {
 	if err := supportedPlatform(goos, goarch); err != nil {
 		return err
@@ -136,7 +136,7 @@ func supportedDriver(goos, goarch, driver, network string) error {
 	expected := "kvm2"
 	if goos == "darwin" {
 		expected = "qemu2"
-	} else if goarch == "arm64" {
+	} else if goos == "windows" || goarch == "arm64" {
 		expected = "docker"
 	}
 	if driver != expected {

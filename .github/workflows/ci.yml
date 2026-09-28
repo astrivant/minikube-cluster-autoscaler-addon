@@ -96,7 +96,7 @@ jobs:
           path: .cache/coverage-shards
       - name: Combine platform coverage
         run: |
-          for runner in ubuntu-24.04 ubuntu-24.04-arm macos-15 macos-15-intel; do
+          for runner in ubuntu-24.04 ubuntu-24.04-arm macos-15 macos-15-intel windows-2025; do
               test -s ".cache/coverage-shards/coverage-$runner/coverage.out"
           done
           python scripts/coverage-summary.py .cache/coverage-shards/coverage-*/coverage.out >> "$GITHUB_STEP_SUMMARY"

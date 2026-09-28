@@ -1,5 +1,9 @@
 # Configuration reference
 
+Minikube generates `<state-dir>/config.json` on first enable from the cluster
+profile, host gateway, and available memory. For custom limits, place a complete
+configuration there before first enable.
+
 JSON is strict: unknown fields and trailing JSON objects are rejected.
 
 | Field | Meaning and limits |
@@ -31,10 +35,16 @@ explicit host-gateway mapping. Nodes reach the provider at `listen`. Both links
 use distinct mutual-TLS client identities. The bridge binds port 50052 on host
 interfaces, so host firewall rules should restrict it to trusted local clients.
 
-## Script environment
+## Environment
+
+Minikube accepts the addon path, state directory, binary, and image overrides
+on first enable and saves them with the profile. It supplies the profile and
+configuration path to script hooks. The configuration override is for direct
+script use.
 
 | Variable | Default |
 | --- | --- |
+| `MINIKUBE_AUTOSCALER_ADDON_PATH` | Auto-discovered bundle or neighboring checkout (Minikube integration) |
 | `MINIKUBE_AUTOSCALER_PROFILE` | `minikube` |
 | `MINIKUBE_AUTOSCALER_STATE_DIR` | `$XDG_STATE_HOME/minikube-cluster-autoscaler-addon/<profile>`, or `$HOME/.local/state/...` |
 | `MINIKUBE_AUTOSCALER_CONFIG` | `<state-dir>/config.json`; point at an edited example for first initialization |

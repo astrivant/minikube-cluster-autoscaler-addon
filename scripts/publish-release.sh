@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Publish only the four archives already built and validated by this pipeline run.
+# Publish only the six archives already built and validated by this pipeline run.
 set -euo pipefail
 version="$(bash scripts/validate-tag.sh "${1:-}")"
 revision="${2:?expected source SHA}"
 [[ "$(git rev-parse "refs/tags/$version^{commit}")" == "$revision" ]]
 [[ "$(git rev-parse HEAD)" == "$revision" ]]
-for target_os in darwin linux; do
+for target_os in darwin linux windows; do
     for target_arch in amd64 arm64; do
         test -s "dist/minikube-cluster-autoscaler-addon_${version#v}_${target_os}_${target_arch}.tar.gz"
     done
 done
 archives=(dist/*.tar.gz)
-[[ ${#archives[@]} -eq 4 ]]
+[[ ${#archives[@]} -eq 6 ]]
 (cd dist && sha256sum ./*.tar.gz >checksums.txt && sha256sum --check checksums.txt)
 
 # A draft may be retried after an interrupted upload. Published assets are immutable.

@@ -56,7 +56,14 @@ func Execute(version, commit, buildDate string) error {
 			return err
 		}
 		host, _, _ := net.SplitHostPort(c.Listen)
-		client.url = "https://" + net.JoinHostPort(host, "50052")
+		if runtime.GOOS == "windows" {
+			// Docker Desktop's node-facing host IP need not be assigned to a
+			// Windows interface. Dial locally while verifying the issued SAN.
+			client.url = "https://127.0.0.1:50052"
+			client.client.Transport.(*http.Transport).TLSClientConfig.ServerName = host
+		} else {
+			client.url = "https://" + net.JoinHostPort(host, "50052")
+		}
 		check, cancel := context.WithTimeout(ctx, 15*time.Second)
 		defer cancel()
 		_, err = client.Snapshot(check)
@@ -73,7 +80,12 @@ func Execute(version, commit, buildDate string) error {
 		if err != nil {
 			return err
 		}
-		conn, err := grpc.NewClient(c.Listen, grpc.WithTransportCredentials(credentials.NewTLS(tls)))
+		address := c.Listen
+		if runtime.GOOS == "windows" {
+			tls.ServerName, _, _ = net.SplitHostPort(c.Listen)
+			address = "127.0.0.1:50051"
+		}
+		conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(credentials.NewTLS(tls)))
 		if err != nil {
 			return err
 		}

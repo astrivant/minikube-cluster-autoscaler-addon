@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -21,6 +22,9 @@ func TestExampleConfigurations(t *testing.T) {
 }
 
 func TestReleaseTagValidation(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("release tags are validated on the Unix archive-build runners")
+	}
 	for _, tag := range []string{"v0.1.0", "v1.20.3", "v0.1.0-alpha.1", "v1.0.0-rc.2", "v1.0.0-0"} {
 		result, err := exec.Command("bash", "../../scripts/validate-tag.sh", tag).CombinedOutput()
 		if err != nil || strings.TrimSpace(string(result)) != tag {
@@ -36,9 +40,14 @@ func TestReleaseTagValidation(t *testing.T) {
 
 func TestLifecycleHelpNeedsNoClusterOrCredentials(t *testing.T) {
 	command := exec.Command("bash", "../../scripts/addon.sh", "help")
+	help := "Usage: scripts/addon.sh"
+	if runtime.GOOS == "windows" {
+		command = exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-File", "../../scripts/addon.ps1", "-Action", "help")
+		help = "Usage: addon.ps1"
+	}
 	command.Env = append(os.Environ(), "MINIKUBE_AUTOSCALER_STATE_DIR="+t.TempDir(), "MINIKUBE_AUTOSCALER_CONFIG=/does-not-exist")
 	output, err := command.CombinedOutput()
-	if err != nil || !strings.Contains(string(output), "Usage: scripts/addon.sh") {
+	if err != nil || !strings.Contains(string(output), help) {
 		t.Fatalf("help should be safe without a cluster: %v %s", err, output)
 	}
 }

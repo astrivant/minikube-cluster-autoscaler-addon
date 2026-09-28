@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -71,12 +70,7 @@ func atomicJSON(path string, value any) error {
 	if err = os.Rename(f.Name(), path); err != nil {
 		return err
 	}
-	dir, err := os.Open(filepath.Dir(path))
-	if err != nil {
-		return err
-	}
-	defer dir.Close()
-	return dir.Sync()
+	return syncJournalDirectory(filepath.Dir(path))
 }
 
 func lockFile(path string) (*os.File, error) {
@@ -84,7 +78,7 @@ func lockFile(path string) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+	if err = lockJournalFile(f); err != nil {
 		f.Close()
 		return nil, fmt.Errorf("another lifecycle owner holds %s", path)
 	}

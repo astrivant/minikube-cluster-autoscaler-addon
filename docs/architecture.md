@@ -15,6 +15,11 @@ Base nodes + elastic workers
 
 ## Components
 
+Minikube owns addon discovery, initial configuration, and host process lifecycle.
+Its built-in addon invokes this repository’s script hooks to build components,
+initialize state, and install or remove the Helm release. See the
+[integration contract](minikube-integration.md#lifecycle-contract).
+
 Cluster Autoscaler makes scheduling and scale-down decisions. The provider
 exposes one worker group, `minikube-workers`, and persists requested capacity
 before reconciling it asynchronously. The native bridge executes node operations
@@ -58,6 +63,7 @@ The state directory is scoped to a Minikube profile:
 | Path | Purpose |
 | --- | --- |
 | `config.json` | Persisted initialization configuration |
+| `bridge.log`, `bridge.pid`, `minikube.lock` | Minikube-managed bridge logs, process identity, and lifecycle lock |
 | `provider/state.json` | Desired capacity, worker phases, base inventory, and current error |
 | `provider/config.json`, `provider/tls/` | Container configuration and TLS identities |
 | `host/bridge.json`, `host/tls/` | Native bridge ownership journal and TLS identities |

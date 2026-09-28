@@ -16,8 +16,8 @@ const groupID = "minikube-workers"
 
 // supportedPlatform restricts host operation and release artifacts to tested targets.
 func supportedPlatform(goos, goarch string) error {
-	if (goos != "darwin" && goos != "linux") || (goarch != "amd64" && goarch != "arm64") {
-		return fmt.Errorf("unsupported platform %s/%s: use macOS or Linux on amd64 or arm64", goos, goarch)
+	if (goos != "darwin" && goos != "linux" && goos != "windows") || (goarch != "amd64" && goarch != "arm64") {
+		return fmt.Errorf("unsupported platform %s/%s: use macOS, Linux or Windows on amd64 or arm64", goos, goarch)
 	}
 	return nil
 }

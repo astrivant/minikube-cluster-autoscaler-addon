@@ -2,7 +2,7 @@
 
 ## Install an archive
 
-Download the archive for your host OS (`darwin` or `linux`) and architecture
+Download the archive for your host OS (`darwin`, `linux` or `windows`) and architecture
 (`amd64` or `arm64`) from [Releases](https://github.com/astrivant/minikube-cluster-autoscaler-addon/releases).
 Each contains a native bridge, a same-architecture Linux provider binary, the
 chart and dependency, scripts, examples, and documentation.
@@ -17,13 +17,16 @@ gh release download "v$VERSION" --repo astrivant/minikube-cluster-autoscaler-add
   --pattern "$ARCHIVE.tar.gz" --pattern checksums.txt
 grep "$ARCHIVE.tar.gz" checksums.txt | shasum -a 256 -c -
 tar -xzf "$ARCHIVE.tar.gz"
-cd "$ARCHIVE"
-bash scripts/addon.sh build
+mkdir -p "$HOME/.minikube/addons"
+mv "$ARCHIVE" "$HOME/.minikube/addons/cluster-autoscaler"
+minikube addons enable cluster-autoscaler
 ```
 
-The build command selects the Dockerfile's `production` target and packages the
-Linux binary. Continue with [cluster activation](../README.md#activate-on-a-cluster).
-Keep the state directory outside the extracted archive across upgrades.
+Use the Minikube build with the built-in addon integration. On first enable,
+Minikube invokes the bundle's build hook, which selects the Dockerfile's
+`production` target and packages the Linux binary. The install directory above
+should be empty for a first installation; replace its contents when upgrading.
+State lives separately from the bundle. See [integration](minikube-integration.md).
 
 ## Pipeline
 
@@ -33,8 +36,8 @@ required stages and is the branch-protection check.
 
 | Stage | Output |
 | --- | --- |
-| Test | Race tests and CLI checks on four host targets; pre-commit, Helm lint/render, and hypothesis-helm reports for Kubernetes 1.35.0 |
-| Build | Four platform archives; development and production container checks on Linux amd64/arm64 |
+| Test | Race tests and CLI checks on macOS, Linux and Windows; pre-commit, Helm lint/render, and hypothesis-helm reports for Kubernetes 1.35.0 |
+| Build | Six platform archives; development and production container checks on Linux amd64/arm64 |
 | Release | Verified archives, SHA-256 checksums, and generated notes |
 
 Publication consumes the build artifacts from the same run. The release job
