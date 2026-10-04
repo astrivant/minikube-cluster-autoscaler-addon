@@ -52,13 +52,17 @@ class AddonValuesTests(unittest.TestCase):
 
     def test_invalid_values_fail_schema_validation(self) -> None:
         """
-        Reject malformed durations, image tags, and missing provider addresses.
+        Reject malformed documented inputs before template rendering.
 
         Returns:
             None: Assertions report any values contract violations.
         """
         invalid = [
             "provider.address=",
+            "cluster-autoscaler.fullnameOverride=>0",
+            "cluster-autoscaler.fullnameOverride=0",
+            "cluster-autoscaler.fullnameOverride=true",
+            "cluster-autoscaler.extraArgs.cloud-config=/etc/provider/\r0",
             'cluster-autoscaler.image.tag="',
             "cluster-autoscaler.image.tag=",
             "cluster-autoscaler.image.tag=" + "a" * 129,
@@ -78,7 +82,7 @@ class AddonValuesTests(unittest.TestCase):
         Returns:
             None: Assertions report any values contract violations.
         """
-        for duration in ("0", "16m", "1h30m", "500ms", "0.5s"):
+        for duration in ("0", "16m", "1h30m", "500ms", "0.5s", ".5s", "1.s", "+1m"):
             with self.subTest(duration=duration):
                 args = [arg for key in DURATION_ARGS for arg in ("--set-string", f"cluster-autoscaler.extraArgs.{key}={duration}")]
                 result = render(*args)

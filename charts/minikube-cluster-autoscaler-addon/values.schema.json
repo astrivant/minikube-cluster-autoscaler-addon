@@ -20,7 +20,23 @@
         "fullnameOverride": {
           "type": "string",
           "description": "Name used for Cluster Autoscaler resources.",
-          "default": "minikube-cluster-autoscaler-addon"
+          "default": "minikube-cluster-autoscaler-addon",
+          "maxLength": 63,
+          "pattern": "^$|^[a-z]([-a-z0-9]*[a-z0-9])?$",
+          "not": {
+            "enum": [
+              "null",
+              "true",
+              "false",
+              "yes",
+              "no",
+              "on",
+              "off",
+              "y",
+              "n"
+            ]
+          },
+          "$comment": "The upstream templates emit names as unquoted YAML scalars; boolean and null literals cannot represent resource names."
         },
         "cloudProvider": {
           "type": "string",
@@ -64,31 +80,35 @@
             "cloud-config": {
               "type": "string",
               "description": "Path to the mounted external gRPC provider configuration.",
-              "default": "/etc/provider/cloud-config.yaml"
+              "default": "/etc/provider/cloud-config.yaml",
+              "pattern": "^/[^\\r\\n]*$",
+              "not": {
+                "pattern": ":\\s"
+              }
             },
             "max-node-provision-time": {
               "type": "string",
               "description": "Maximum time allowed for a new worker to become ready.",
               "default": "16m",
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-delay-after-add": {
               "type": "string",
               "description": "Delay before considering scale down after adding a node.",
               "default": "5m",
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-unneeded-time": {
               "type": "string",
               "description": "Time a node must remain unneeded before removal.",
               "default": "5m",
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-unready-time": {
               "type": "string",
               "description": "Time an unready node must remain unneeded before removal.",
               "default": "10m",
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "max-scale-down-parallelism": {
               "type": "integer",

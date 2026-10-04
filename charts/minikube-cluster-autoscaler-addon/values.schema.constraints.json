@@ -50,16 +50,22 @@
               "type": "integer"
             },
             "max-node-provision-time": {
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-delay-after-add": {
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-unneeded-time": {
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
             },
             "scale-down-unready-time": {
-              "pattern": "^(0|([0-9]+(\\.[0-9]+)?(ns|us|µs|μs|ms|s|m|h))+)$"
+              "pattern": "^\\+?(0|(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+)$"
+            },
+            "cloud-config": {
+              "pattern": "^/[^\\r\\n]*$",
+              "not": {
+                "pattern": ":\\s"
+              }
             }
           }
         },
@@ -188,6 +194,24 @@
         },
         "cloudProvider": {
           "const": "externalgrpc"
+        },
+        "fullnameOverride": {
+          "maxLength": 63,
+          "pattern": "^$|^[a-z]([-a-z0-9]*[a-z0-9])?$",
+          "not": {
+            "enum": [
+              "null",
+              "true",
+              "false",
+              "yes",
+              "no",
+              "on",
+              "off",
+              "y",
+              "n"
+            ]
+          },
+          "$comment": "The upstream templates emit names as unquoted YAML scalars; boolean and null literals cannot represent resource names."
         }
       }
     }
