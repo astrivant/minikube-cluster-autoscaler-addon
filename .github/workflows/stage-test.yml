@@ -47,6 +47,8 @@ jobs:
           sed 's/^  address: ""$/  address: 192.168.105.1:50051/' \
             charts/minikube-cluster-autoscaler-addon/values.yaml > "$RUNNER_TEMP/autoscaler-chart/values.yaml"
           python3 - <<'PY'
+          import hashlib
+          import json
           import os
           import re
           from pathlib import Path
@@ -57,7 +59,26 @@ jobs:
           for key in re.findall(r"## @param (\S+)", values):
               key = re.sub(r"\[\d+\]", ".*", key)
               names.add("test_" + re.sub(r"[^a-zA-Z0-9_]", "_", key)[:80] + "_")
-          match = " or ".join(sorted(names))
+          def leaf_paths(schema, path=()):
+              if schema.get("properties"):
+                  for key, child in schema["properties"].items():
+                      yield from leaf_paths(child, (*path, key))
+              elif schema.get("type") == "array":
+                  yield from leaf_paths(schema["items"], (*path, "*"))
+              else:
+                  yield path
+
+          schema = json.loads(Path("charts/minikube-cluster-autoscaler-addon/values.schema.json").read_text())
+          selected = []
+          for path in leaf_paths(schema):
+              name = "test_" + re.sub(r"[^a-zA-Z0-9_]", "_", "_".join(path))[:80] + "_"
+              if name in names:
+                  # Match the pinned runner's complete test ID, not a prefix.
+                  selected.append(name + hashlib.sha256(repr(path).encode()).hexdigest()[:10])
+                  names.remove(name)
+          if names:
+              raise ValueError(f"Documented values missing from the schema: {sorted(names)}")
+          match = " or ".join(sorted(selected))
           with open(os.environ["GITHUB_OUTPUT"], "a") as output:
               output.write(f"match={match}\n")
           PY
@@ -128,10 +149,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: .go-version
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
@@ -150,6 +171,7 @@ jobs:
       - run: bash scripts/chart-dependencies.sh
       - run: helm lint charts/minikube-cluster-autoscaler-addon --set provider.address=192.168.105.1:50051 --kube-version 1.35.0
       - run: helm lint charts/autoscaling-demo --kube-version 1.35.0
+      - run: python3 scripts/test-chart.py
       - run: python3 scripts/test-demo.py
       - name: Render standalone configuration
         env:
