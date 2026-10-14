@@ -83,7 +83,7 @@ jobs:
               output.write(f"match={match}\n")
           PY
       - name: Test chart with hypothesis-helm
-        uses: astrivant/hypothesis-helm@dbc07922420fa38ddeead026f7c857eeaae66910 # v1.3.5
+        uses: astrivant/hypothesis-helm@25d9b41a2ecdf020651d62f293d63bce8e935730 # v1.3.10
         with:
           chart: ${{ runner.temp }}/autoscaler-chart
           match: ${{ steps.chart-values.outputs.match }}
