@@ -1,5 +1,5 @@
 # Build a Linux provider for the host's architecture, independent of the bridge OS.
-FROM golang:1.27.1 AS build
+FROM golang:1.27.2 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
