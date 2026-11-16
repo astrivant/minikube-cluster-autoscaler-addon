@@ -33,7 +33,7 @@ jobs:
         with:
           ref: ${{ inputs.sha }}
           persist-credentials: false
-      - uses: azure/setup-helm@v4.3.0
+      - uses: azure/setup-helm@v5.1.0
         with:
           version: v4.3.0
       - name: Register the chart dependency repository
@@ -157,7 +157,7 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: scripts/chart-docs/package-lock.json
-      - uses: azure/setup-helm@v4.3.0
+      - uses: azure/setup-helm@v5.1.0
         with:
           version: v3.19.0
       - name: Install pinned validation tools
