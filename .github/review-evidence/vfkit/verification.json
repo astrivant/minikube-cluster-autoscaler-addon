@@ -1,0 +1,47 @@
+{
+  "source": {
+    "repository": "astrivant/minikube-cluster-autoscaler-addon",
+    "target_repository": "astrivant/minikube-cluster-autoscaler-addon",
+    "base": "adac4ebfc65f8fafb941f04f023b45b1d304c53f",
+    "head": "c4725b0b17d10e86104f3ed2031a6841116697dc",
+    "excluded_root": ".github/review-evidence/",
+    "scope": "Exact root excluded before aggregation; cross-boundary moves retained."
+  },
+  "changed_files": 4,
+  "file_pages": 1,
+  "files": [
+    {
+      "before": "docs/minikube-integration.md",
+      "after": "docs/minikube-integration.md",
+      "added": 14,
+      "deleted": 0
+    },
+    {
+      "before": "pkg/addon/backend.go",
+      "after": "pkg/addon/backend.go",
+      "added": 11,
+      "deleted": 1
+    },
+    {
+      "before": ".github/CODEOWNERS",
+      "after": ".github/CODEOWNERS",
+      "added": 4,
+      "deleted": 0
+    },
+    {
+      "before": "pkg/addon/platform_test.go",
+      "after": "pkg/addon/platform_test.go",
+      "added": 4,
+      "deleted": 0
+    }
+  ],
+  "artifacts": {
+    "languages.png": "3be3601083370c4bc0aa76db97246282d3da2f6a7f828a500aade1ccc38dd614",
+    "directory.png": "2e4e7ab90f24d10536d30b250f026d32c5330284b162b8645be2c9d6e7d810cf",
+    "files-001.png": "9e1f86fa39926dd10236c582cd70da8079eba96d75928da23f54c278a4e23bff",
+    "intent.png": "7066da047cf5bb923f068d0ee5abc340b857a593892e508512fb750b7bec8198"
+  },
+  "palette_sha256": "d51ee253badfe7a5683af852a69973690c686e77774fcf7e4b76611db62dfdf1",
+  "intent": "Unavailable canonical source-bound claims. No purpose inferred from touched paths.",
+  "inspection": "Deterministic render only; no image-inspection claim."
+}
