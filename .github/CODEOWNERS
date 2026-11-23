@@ -1,0 +1,4 @@
+/pkg/addon/backend.go @emmeowzing
+/pkg/addon/platform_test.go @emmeowzing
+/docs/minikube-integration.md @emmeowzing
+/.github/CODEOWNERS @emmeowzing

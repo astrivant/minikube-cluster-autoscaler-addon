@@ -32,6 +32,7 @@ before enabling the addon.
 | Host | Architecture | Minikube driver |
 | --- | --- | --- |
 | macOS | arm64, amd64 | `qemu2` with `socket_vmnet` |
+| macOS | arm64 | `vfkit` with `vmnet-shared` |
 | Linux | amd64 | `kvm2` |
 | Linux | arm64 | `docker` |
 | Windows | amd64, arm64 | `docker` (Linux containers) |
@@ -44,6 +45,19 @@ minikube start --driver=qemu2 --network=socket_vmnet \
   --kubernetes-version=v1.35.0 --nodes=1 --memory=4096 --cpus=2
 minikube addons enable cluster-autoscaler
 ```
+
+For Apple Silicon, `vfkit` can use the same provider with shared VM networking:
+
+```bash
+minikube start --driver=vfkit --network=vmnet-shared \
+  --kubernetes-version=v1.35.0 --nodes=3 --memory=3072 --cpus=2
+```
+
+Install Minikube's vfkit networking prerequisites before running this command.
+The addon continues to delegate worker creation/deletion to Minikube; it does not
+invoke either hypervisor directly. Existing nodes remain protected base workers.
+The `vmnet-host` network is rejected because this provider requires routable
+multi-node and host-bridge connectivity. Intel macOS retains the QEMU path.
 
 On Linux and Windows, select the driver from the table and omit `--network`. Existing
 workers become part of the fixed base pool.

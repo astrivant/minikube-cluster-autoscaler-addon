@@ -128,11 +128,21 @@ func (b commands) Snapshot(ctx context.Context) (Snapshot, error) {
 }
 
 // supportedDriver keeps the upstream Linux/arm64 KVM limitation explicit.
-// Windows uses Docker Desktop with Linux containers.
+// Windows uses Docker Desktop with Linux containers. Apple Silicon also supports
+// vfkit over shared vmnet; node lifecycle remains delegated to Minikube.
 func supportedDriver(goos, goarch, driver, network string) error {
 	if err := supportedPlatform(goos, goarch); err != nil {
 		return err
 	}
+	// Shared vmnet is routable between the control plane, workers and host bridge.
+	// Host-only vfkit networking cannot support this multi-node provider contract.
+	if goos == "darwin" && goarch == "arm64" && driver == "vfkit" {
+		if network != "vmnet-shared" {
+			return fmt.Errorf("macOS vfkit requires vmnet-shared networking")
+		}
+		return nil
+	}
+
 	expected := "kvm2"
 	if goos == "darwin" {
 		expected = "qemu2"
