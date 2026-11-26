@@ -166,10 +166,15 @@ func (b commands) Add(ctx context.Context, _ Worker, memory int) error {
 
 func (b commands) Mark(ctx context.Context, w Worker) error {
 	// UID preconditions prevent assigning ownership to a replacement with the same name.
-	patch, _ := json.Marshal([]map[string]any{
-		{"op": "test", "path": "/metadata/uid", "value": w.UID},
-		{"op": "add", "path": "/spec/providerID", "value": w.ID},
-	})
+	operations := []map[string]any{{"op": "test", "path": "/metadata/uid", "value": w.UID}}
+	if w.ProviderID != "" {
+		// Kubernetes forbids replacing an existing providerID. Test the native
+		// identity instead; the host journal has independently captured it.
+		operations = append(operations, map[string]any{"op": "test", "path": "/spec/providerID", "value": w.ProviderID})
+	} else {
+		operations = append(operations, map[string]any{"op": "add", "path": "/spec/providerID", "value": w.ID})
+	}
+	patch, _ := json.Marshal(operations)
 	if _, err := b.kube(ctx, nil, "patch", "node", w.Name, "--type=json", "-p", string(patch)); err != nil {
 		return err
 	}
@@ -189,7 +194,7 @@ func (b commands) Delete(ctx context.Context, w Worker) error {
 	if err = json.Unmarshal(data, &node); err != nil {
 		return err
 	}
-	if string(node.UID) != w.UID || node.Spec.ProviderID != w.ID || node.Labels[poolLabel] != "elastic" {
+	if string(node.UID) != w.UID || node.Spec.ProviderID != providerID(w) || node.Labels[poolLabel] != "elastic" {
 		return fmt.Errorf("refusing deletion: node ownership changed")
 	}
 	cordoned := node.Spec.Unschedulable

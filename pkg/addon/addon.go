@@ -152,6 +152,9 @@ func Execute(version, commit, buildDate string) error {
 			if w.Phase == "creating" {
 				// The host's independent journal is proof of ownership, not a name match.
 				owned := hostState.Owned[w.ID]
+				if owned.Name != w.Name || owned.UID == "" || string(s.Nodes[w.Name].UID) != owned.UID {
+					return fmt.Errorf("ambiguous creation %s; original host ownership proof is required", w.Name)
+				}
 				if w.UID == "" && owned.Name == w.Name && owned.UID != "" && string(s.Nodes[w.Name].UID) == owned.UID {
 					w.UID = owned.UID
 					st.Workers[i].UID = owned.UID
@@ -159,11 +162,15 @@ func Execute(version, commit, buildDate string) error {
 				if w.UID == "" || !nodeReady(s.Nodes[w.Name]) {
 					return fmt.Errorf("ambiguous creation %s; inspect host journal, do not adopt by name", w.Name)
 				}
+				w, err = bindProviderID(w, s.Nodes[w.Name])
+				if err != nil {
+					return err
+				}
 				if err = b.Mark(ctx, w); err != nil {
 					return err
 				}
-				st.Workers[i].Phase = "ready"
 				w.Phase = "ready"
+				st.Workers[i] = w
 				hostState.Owned[w.ID] = w
 			}
 		}

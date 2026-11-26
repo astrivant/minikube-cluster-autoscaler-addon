@@ -20,10 +20,34 @@ import (
 
 // Worker is a durable lifecycle intent. IDs survive retries and node-name reuse.
 type Worker struct {
-	ID    string
-	Name  string
-	UID   string
-	Phase string
+	ID         string
+	Name       string
+	UID        string
+	Phase      string
+	ProviderID string `json:",omitempty"`
+}
+
+// providerID separates the native node identity from the durable operation ID.
+// Old journals retain their previously assigned IDs without implicit migration.
+func providerID(w Worker) string {
+	if w.ProviderID != "" {
+		return w.ProviderID
+	}
+	return w.ID
+}
+
+// bindProviderID captures the kubelet's existing immutable ID only after UID fencing.
+func bindProviderID(w Worker, n v1.Node) (Worker, error) {
+	if w.UID == "" || w.Name != n.Name || w.UID != string(n.UID) {
+		return w, fmt.Errorf("cannot bind provider identity without the recorded worker UID")
+	}
+	if w.ProviderID != "" && w.ProviderID != n.Spec.ProviderID {
+		return w, fmt.Errorf("native provider identity changed for the recorded worker")
+	}
+	if n.Spec.ProviderID != "" && n.Spec.ProviderID != w.ID {
+		w.ProviderID = n.Spec.ProviderID
+	}
+	return w, nil
 }
 
 type State struct {
@@ -221,7 +245,7 @@ func validateSnapshot(st State, s Snapshot) error {
 		known[w.Name] = true
 		if w.Phase == "ready" {
 			n, ok := s.Nodes[w.Name]
-			if !ok || n.Spec.ProviderID != w.ID || n.Labels[poolLabel] != "elastic" {
+			if !ok || n.Spec.ProviderID != providerID(w) || n.Labels[poolLabel] != "elastic" {
 				return fmt.Errorf("worker %s disappeared or its ownership changed", w.Name)
 			}
 		}
@@ -297,6 +321,10 @@ func (p *provider) reconcile(ctx context.Context) error {
 				return fmt.Errorf("new worker %s did not become Ready", w.Name)
 			}
 			w.UID = string(n.UID)
+			w, err = bindProviderID(w, n)
+			if err != nil {
+				return err
+			}
 			if err = p.update(w); err != nil {
 				return err
 			}

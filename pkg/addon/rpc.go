@@ -44,7 +44,7 @@ func (r *rpcServer) NodeGroupForNode(_ context.Context, q *pb.NodeGroupForNodeRe
 	r.p.mu.Lock()
 	defer r.p.mu.Unlock()
 	for _, w := range r.p.state.Workers {
-		if q.Node != nil && w.ID == q.Node.ProviderID && (w.Name == q.Node.Name || q.Node.Name == w.ID) {
+		if q.Node != nil && providerID(w) == q.Node.ProviderID && (w.Name == q.Node.Name || q.Node.Name == providerID(w)) {
 			return &pb.NodeGroupForNodeResponse{NodeGroup: group(r.p.state)}, nil
 		}
 	}
@@ -110,7 +110,7 @@ func (r *rpcServer) NodeGroupDeleteNodes(_ context.Context, q *pb.NodeGroupDelet
 		seen[node.ProviderID] = true
 		found := false
 		for i, w := range st.Workers {
-			if w.ID != node.ProviderID || w.Name != node.Name {
+			if providerID(w) != node.ProviderID || w.Name != node.Name {
 				continue
 			}
 			if _, base := st.Base[w.Name]; base || (w.Phase != "ready" && w.Phase != "deleting") {
@@ -144,7 +144,7 @@ func (r *rpcServer) NodeGroupNodes(_ context.Context, q *pb.NodeGroupNodesReques
 		if w.Phase == "deleting" {
 			state = pb.InstanceStatus_instanceDeleting
 		}
-		response.Instances = append(response.Instances, &pb.Instance{Id: w.ID, Status: &pb.InstanceStatus{InstanceState: state}})
+		response.Instances = append(response.Instances, &pb.Instance{Id: providerID(w), Status: &pb.InstanceStatus{InstanceState: state}})
 	}
 	return response, nil
 }
