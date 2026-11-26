@@ -248,6 +248,9 @@ func validateSnapshot(st State, s Snapshot) error {
 			if !ok || n.Spec.ProviderID != providerID(w) || n.Labels[poolLabel] != "elastic" {
 				return fmt.Errorf("worker %s disappeared or its ownership changed", w.Name)
 			}
+			if w.ProviderID != "" && n.Annotations[intentAnnotation] != w.ID {
+				return fmt.Errorf("worker %s incarnation annotation changed", w.Name)
+			}
 		}
 		if n, ok := s.Nodes[w.Name]; ok && w.UID != "" && string(n.UID) != w.UID {
 			return fmt.Errorf("worker %s UID changed", w.Name)

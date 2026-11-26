@@ -1,0 +1,12 @@
+{{- /* The native launcher supplies the matching catalog entry. Direct Helm
+installs must select one explicitly outside the default image's minor. */ -}}
+{{- $image := index .Values "cluster-autoscaler" "image" -}}
+{{- $selected := first (splitList "@" $image.tag) -}}
+{{- $default := printf "v%s" .Chart.AppVersion -}}
+{{- if eq $selected $default -}}
+  {{- $imageVersion := semver .Chart.AppVersion -}}
+  {{- $serverVersion := semver .Capabilities.KubeVersion.Version -}}
+  {{- if or (ne $imageVersion.Major $serverVersion.Major) (ne $imageVersion.Minor $serverVersion.Minor) -}}
+    {{- fail "The default Cluster Autoscaler image minor differs from Kubernetes; select image.tag with the addon's --mode=autoscaler-image --kubernetes-version selector" -}}
+  {{- end -}}
+{{- end -}}

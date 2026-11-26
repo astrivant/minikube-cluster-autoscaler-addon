@@ -49,6 +49,10 @@ minikube start --driver=qemu2 --network=socket_vmnet \
 minikube addons enable cluster-autoscaler
 ```
 
+Direct Helm installations outside the chart's default 1.35 image minor must set
+`cluster-autoscaler.image.tag` from the same binary selector. The chart rejects an
+unmodified default on a newer server rather than silently running a mismatched image.
+
 On Intel and Apple Silicon Macs, `vfkit` can use the same provider with shared VM networking:
 
 ```bash

@@ -1,3 +1,5 @@
+<!-- witful-work-graph:begin -->
+
 ```mermaid
 ---
 config: {"flowchart": {"rankSpacing": 90, "subGraphTitleMargin": {"bottom": 24, "top": 0}}, "layout": "dagre", "theme": "base", "themeVariables": {"edgeLabelBackground": "#F8F9F4", "lineColor": "#647D8B", "primaryTextColor": "#243746"}}
@@ -22,7 +24,13 @@ flowchart TB
     linkStyle 1 stroke:#B77E79,color:#243746
 ```
 
-- [astrivant/minikube-cluster-autoscaler-addon](https://github.com/astrivant/minikube-cluster-autoscaler-addon)
-- [main](https://github.com/astrivant/minikube-cluster-autoscaler-addon/tree/main)
-- [multilayer-prediction-study](https://github.com/astrivant/minikube-cluster-autoscaler-addon/tree/multilayer-prediction-study)
-- [Native shared-vmnet autoscaler support](https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30)
+Containment shows ownership; arrows name recorded relationships.
+
+Associated work:
+
+- [branch: multilayer\-prediction\-study](<https://github.com/astrivant/minikube-cluster-autoscaler-addon/tree/multilayer-prediction-study>)
+- [project: astrivant/minikube\-cluster\-autoscaler\-addon](<https://github.com/astrivant/minikube-cluster-autoscaler-addon>)
+- [review \#30: Native shared\-vmnet autoscaler support](<https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30>)
+- [branch: main](<https://github.com/astrivant/minikube-cluster-autoscaler-addon/tree/main>)
+
+<!-- witful-work-graph:end -->

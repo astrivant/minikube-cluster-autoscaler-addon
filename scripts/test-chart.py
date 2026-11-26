@@ -18,12 +18,13 @@ DURATION_ARGS = (
 )
 
 
-def render(*args: str) -> subprocess.CompletedProcess[str]:
+def render(*args: str, kubernetes_version: str = "1.35.0") -> subprocess.CompletedProcess[str]:
     """
     Render the addon with a reachable provider address and optional overrides.
 
     Args:
         *args (str): Additional Helm command-line arguments.
+        kubernetes_version (str): Explicit server capability version for compatibility checks.
 
     Returns:
         subprocess.CompletedProcess[str]: Helm exit status and captured output.
@@ -35,7 +36,7 @@ def render(*args: str) -> subprocess.CompletedProcess[str]:
             "minikube-cluster-autoscaler-addon",
             str(CHART),
             "--kube-version",
-            "1.35.0",
+            kubernetes_version,
             "--set-string",
             "provider.address=192.168.105.1:50051",
             *args,
@@ -94,8 +95,21 @@ class AddonValuesTests(unittest.TestCase):
             "v1.37.0@sha256:bad6629616b9544dc5e358ee030f6d1d4047192e484d2e15bffb0c9fcd90b949",
         ):
             with self.subTest(tag=tag):
-                result = render("--set-string", f"cluster-autoscaler.image.tag={tag}")
+                version = "1.37.2" if tag.startswith("v1.37.") else "1.35.0"
+                result = render("--set-string", f"cluster-autoscaler.image.tag={tag}", kubernetes_version=version)
                 self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_newer_servers_require_an_explicit_matching_image(self) -> None:
+        """
+        Prevent a direct Helm install from silently retaining the default 1.35 image on a newer server.
+
+        Returns:
+            None: The chart fails with an actionable selector command until an image is supplied.
+        """
+        for version in ("1.36.1", "1.37.2"):
+            result = render(kubernetes_version=version)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("default Cluster Autoscaler image minor differs", result.stderr)
 
 
 if __name__ == "__main__":

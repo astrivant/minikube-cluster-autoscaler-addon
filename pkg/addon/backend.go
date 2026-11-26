@@ -181,6 +181,11 @@ func (b commands) Mark(ctx context.Context, w Worker) error {
 	if _, err := b.kube(ctx, nil, "label", "node", w.Name, poolLabel+"=elastic", "--overwrite"); err != nil {
 		return err
 	}
+	if w.ProviderID != "" {
+		if _, err := b.kube(ctx, nil, "annotate", "node", w.Name, intentAnnotation+"="+w.ID, "--overwrite"); err != nil {
+			return err
+		}
+	}
 	_, err := b.kube(ctx, nil, "taint", "node", w.Name, elasticTaint+"=true:NoSchedule", "--overwrite")
 	return err
 }
@@ -196,6 +201,9 @@ func (b commands) Delete(ctx context.Context, w Worker) error {
 	}
 	if string(node.UID) != w.UID || node.Spec.ProviderID != providerID(w) || node.Labels[poolLabel] != "elastic" {
 		return fmt.Errorf("refusing deletion: node ownership changed")
+	}
+	if w.ProviderID != "" && node.Annotations[intentAnnotation] != w.ID {
+		return fmt.Errorf("refusing deletion: worker incarnation annotation changed")
 	}
 	cordoned := node.Spec.Unschedulable
 	for _, t := range node.Spec.Taints {

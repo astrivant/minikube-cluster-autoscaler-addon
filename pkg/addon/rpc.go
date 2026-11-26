@@ -44,7 +44,7 @@ func (r *rpcServer) NodeGroupForNode(_ context.Context, q *pb.NodeGroupForNodeRe
 	r.p.mu.Lock()
 	defer r.p.mu.Unlock()
 	for _, w := range r.p.state.Workers {
-		if q.Node != nil && providerID(w) == q.Node.ProviderID && (w.Name == q.Node.Name || q.Node.Name == providerID(w)) {
+		if q.Node != nil && providerID(w) == q.Node.ProviderID && (w.Name == q.Node.Name || q.Node.Name == providerID(w)) && (w.ProviderID == "" || q.Node.Annotations[intentAnnotation] == w.ID) {
 			return &pb.NodeGroupForNodeResponse{NodeGroup: group(r.p.state)}, nil
 		}
 	}
@@ -112,6 +112,9 @@ func (r *rpcServer) NodeGroupDeleteNodes(_ context.Context, q *pb.NodeGroupDelet
 		for i, w := range st.Workers {
 			if providerID(w) != node.ProviderID || w.Name != node.Name {
 				continue
+			}
+			if w.ProviderID != "" && node.Annotations[intentAnnotation] != w.ID {
+				return nil, status.Error(codes.FailedPrecondition, "stale worker incarnation in deletion request")
 			}
 			if _, base := st.Base[w.Name]; base || (w.Phase != "ready" && w.Phase != "deleting") {
 				break

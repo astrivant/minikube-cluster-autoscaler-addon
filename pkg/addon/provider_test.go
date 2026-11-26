@@ -71,6 +71,12 @@ func (f *fakeBackend) Mark(_ context.Context, w Worker) error {
 		return fmt.Errorf("native provider ID is immutable")
 	}
 	n.Spec.ProviderID = providerID(w)
+	if w.ProviderID != "" {
+		if n.Annotations == nil {
+			n.Annotations = map[string]string{}
+		}
+		n.Annotations[intentAnnotation] = w.ID
+	}
 	n.Labels[poolLabel] = "elastic"
 	f.snapshot.Nodes[w.Name] = n
 	return nil
@@ -98,6 +104,21 @@ func TestNativeProviderIdentityIsSeparateFromDurableWorkIdentity(t *testing.T) {
 	instances, err := rpc.NodeGroupNodes(context.Background(), &pb.NodeGroupNodesRequest{Id: groupID})
 	if err != nil || len(instances.Instances) != 1 || instances.Instances[0].Id != w.ProviderID {
 		t.Fatalf("autoscaler must receive the native provider identity: %+v %v", instances, err)
+	}
+	old := &pb.ExternalGrpcNode{Name: w.Name, ProviderID: w.ProviderID, Annotations: map[string]string{intentAnnotation: "old-work-intent"}}
+	if _, err := rpc.NodeGroupDeleteNodes(context.Background(), &pb.NodeGroupDeleteNodesRequest{Id: groupID, Nodes: []*pb.ExternalGrpcNode{old}}); err == nil {
+		t.Fatal("a stale request cannot target a replacement with the same native name and provider ID")
+	}
+	if p.state.Workers[0].Phase != "ready" {
+		t.Fatal("rejected stale deletion changed the current worker intent")
+	}
+	current := &pb.ExternalGrpcNode{Name: w.Name, ProviderID: w.ProviderID, Annotations: map[string]string{intentAnnotation: w.ID}}
+	owner, err := rpc.NodeGroupForNode(context.Background(), &pb.NodeGroupForNodeRequest{Node: current})
+	if err != nil || owner.NodeGroup.Id != groupID {
+		t.Fatalf("current incarnation must retain its node group: %+v %v", owner, err)
+	}
+	if _, err := rpc.NodeGroupDeleteNodes(context.Background(), &pb.NodeGroupDeleteNodesRequest{Id: groupID, Nodes: []*pb.ExternalGrpcNode{current}}); err != nil {
+		t.Fatalf("a current annotated incarnation must permit normal deletion: %v", err)
 	}
 	node := backend.snapshot.Nodes[w.Name]
 	node.UID = "replacement"

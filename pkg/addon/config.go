@@ -12,6 +12,7 @@ import (
 
 const poolLabel = "minikube-autoscaler.astrivant.com/pool"
 const elasticTaint = "minikube-autoscaler.astrivant.com/elastic"
+const intentAnnotation = "minikube-autoscaler.astrivant.com/intent"
 const groupID = "minikube-workers"
 
 // supportedPlatform restricts host operation and release artifacts to tested targets.
