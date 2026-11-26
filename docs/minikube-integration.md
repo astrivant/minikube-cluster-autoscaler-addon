@@ -32,18 +32,43 @@ before enabling the addon.
 | Host | Architecture | Minikube driver |
 | --- | --- | --- |
 | macOS | arm64, amd64 | `qemu2` with `socket_vmnet` |
+| macOS | arm64, amd64 | `vfkit` with `vmnet-shared` |
 | Linux | amd64 | `kvm2` |
 | Linux | arm64 | `docker` |
 | Windows | amd64, arm64 | `docker` (Linux containers) |
 
-Use Kubernetes 1.35.x; the chart pins Cluster Autoscaler 1.35.0. For example,
+Use Minikube's default stable Kubernetes release. The installed addon selects a
+reviewed, digest-pinned Cluster Autoscaler image matching the actual server minor.
+The current image catalog covers Kubernetes 1.35, 1.36 and 1.37; unknown minors or
+prereleases fail before provider/controller mutation. For example,
 create a one-node cluster on macOS and enable the addon:
 
 ```bash
 minikube start --driver=qemu2 --network=socket_vmnet \
-  --kubernetes-version=v1.35.0 --nodes=1 --memory=4096 --cpus=2
+  --nodes=1 --cni=kindnet --memory=4096 --cpus=2
 minikube addons enable cluster-autoscaler
 ```
+
+Direct Helm installations outside the chart's default 1.35 image minor must set
+`cluster-autoscaler.image.tag` from the same binary selector. The chart rejects an
+unmodified default on a newer server rather than silently running a mismatched image.
+
+On Intel and Apple Silicon Macs, `vfkit` can use the same provider with shared VM networking:
+
+```bash
+minikube start --driver=vfkit --network=vmnet-shared \
+  --nodes=1 --cni=kindnet --memory=3072 --cpus=2
+```
+
+Install Minikube's vfkit networking prerequisites before running this command.
+Select a cluster-wide CNI explicitly when starting from one node. A single-node
+bridge-only default can leave an added worker NotReady because its CNI is not
+initialized. `--cni=kindnet` supports the later worker fanout.
+
+The addon continues to delegate worker creation/deletion to Minikube; it does not
+invoke either hypervisor directly. Existing nodes remain protected base workers.
+The `vmnet-host` network is rejected because this provider requires routable
+multi-node and host-bridge connectivity. Intel macOS retains the QEMU path.
 
 On Linux and Windows, select the driver from the table and omit `--network`. Existing
 workers become part of the fixed base pool.
@@ -109,7 +134,7 @@ The Windows bundle includes `bin/minikube-cluster-autoscaler-addon.exe` and a
 Linux provider binary for Docker Desktop. The Minikube command remains the same:
 
 ```powershell
-minikube start --driver=docker --kubernetes-version=v1.35.0
+minikube start --driver=docker
 minikube addons enable cluster-autoscaler
 ```
 

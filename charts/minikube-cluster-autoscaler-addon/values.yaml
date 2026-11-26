@@ -16,7 +16,7 @@ cluster-autoscaler:
     clusterName: minikube
   image:
     ## @param cluster-autoscaler.image.tag Cluster Autoscaler image tag, matched to the Kubernetes minor version.
-    tag: v1.35.0
+    tag: v1.35.3@sha256:d45370bcadf7ae5e7a52281ccd79f7c0a72d0cf983b036bdc4f1afb2c34eebe3
   ## @param cluster-autoscaler.replicaCount Number of Cluster Autoscaler replicas.
   replicaCount: 1
   ## @param cluster-autoscaler.nodeSelector.minikube-autoscaler.astrivant.com/pool Node pool hosting Cluster Autoscaler.

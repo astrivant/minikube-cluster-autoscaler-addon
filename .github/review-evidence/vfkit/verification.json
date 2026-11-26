@@ -1,0 +1,16 @@
+{
+  "source": {
+    "repository": "minikube-cluster-autoscaler-addon",
+    "base": "adac4ebfc65f8fafb941f04f023b45b1d304c53f",
+    "head": "71e9029e1d5788aa928c095f0036d82f4417ebde",
+    "excluded_root": ".github/review-evidence/",
+    "scope": "Exact root excluded before aggregation; cross-boundary moves retained."
+  },
+  "generated": [
+    "language",
+    "files",
+    "intent"
+  ],
+  "intent": "Canonical intent export unavailable; no purpose inferred from touched paths.",
+  "inspection": "Deterministic generation only; no visual-inspection claim."
+}

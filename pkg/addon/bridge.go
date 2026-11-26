@@ -87,7 +87,7 @@ func (b *bridge) mutate(ctx context.Context, action string, q bridgeRequest) err
 			return fmt.Errorf("creation already recorded; inspect its outcome, never create twice")
 		}
 		prefix := "minikube://" + st.Config.Profile + "/" + st.ClusterUID + "/"
-		if !strings.HasPrefix(q.Worker.ID, prefix) || len(strings.TrimPrefix(q.Worker.ID, prefix)) != 32 || q.Worker.Phase != "creating" || q.Worker.UID != "" || q.Memory != st.Memory || len(b.state.Owned) >= st.Config.MaxWorkers {
+		if !strings.HasPrefix(q.Worker.ID, prefix) || len(strings.TrimPrefix(q.Worker.ID, prefix)) != 32 || q.Worker.Phase != "creating" || q.Worker.UID != "" || q.Worker.ProviderID != "" || q.Memory != st.Memory || len(b.state.Owned) >= st.Config.MaxWorkers {
 			return fmt.Errorf("invalid creation or worker limit reached")
 		}
 		expected, err := nextName(s)
@@ -118,6 +118,10 @@ func (b *bridge) mutate(ctx context.Context, action string, q bridgeRequest) err
 					return fmt.Errorf("new worker was replaced while awaiting readiness")
 				}
 				q.Worker.UID = string(n.UID)
+				q.Worker, err = bindProviderID(q.Worker, n)
+				if err != nil {
+					return err
+				}
 				b.state.Owned[q.Worker.ID] = q.Worker
 				if err = atomicJSON(b.path, b.state); err != nil {
 					return err
@@ -139,6 +143,9 @@ func (b *bridge) mutate(ctx context.Context, action string, q bridgeRequest) err
 		}
 		if !exists || old.Name != q.Worker.Name || old.UID == "" || old.UID != q.Worker.UID {
 			return fmt.Errorf("worker is not in the bridge ownership journal")
+		}
+		if old.ProviderID != q.Worker.ProviderID {
+			return fmt.Errorf("native provider identity differs from the bridge ownership journal")
 		}
 		if action == "/mark" {
 			if err = b.backend.Mark(ctx, q.Worker); err != nil {

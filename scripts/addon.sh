@@ -150,6 +150,9 @@ case "$1" in
     enable)
         [[ -f "$STATE_DIR/provider/state.json" ]] || fail 'Run init first'
         [[ "$(jq -r '.Error' "$STATE_DIR/provider/state.json")" == '' ]] || fail 'Provider is paused; inspect status and use resume after repair'
+        # Select a matching reviewed image before any controller or provider mutation.
+        server_version="$(kube version -o json | jq -er '.serverVersion.gitVersion')"
+        autoscaler_image="$("$BINARY" --mode=autoscaler-image --kubernetes-version="$server_version")"
         protect_base
         # Validate host connectivity before starting a container that can request VMs.
         "$BINARY" --mode=bridge-check --config="$CONFIG" --state-dir="$STATE_DIR"
@@ -177,6 +180,7 @@ case "$1" in
         timeout_seconds="$(jq -r '.provisionTimeoutSeconds + 60' "$CONFIG")"
         helm upgrade --install "$RELEASE" "$CHART" --kube-context "$PROFILE" --namespace "$NAMESPACE" \
             --set-string "provider.address=$ADDRESS" \
+            --set-string "cluster-autoscaler.image.tag=$autoscaler_image" \
             --set-string "cluster-autoscaler.autoDiscovery.clusterName=$PROFILE" \
             --set-string "cluster-autoscaler.extraArgs.max-node-provision-time=${timeout_seconds}s" \
             --wait --timeout 5m

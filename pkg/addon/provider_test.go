@@ -28,6 +28,7 @@ type fakeBackend struct {
 	adds, deletes   int
 	addError        error
 	readyAfterReads int
+	nativeIDs       bool
 }
 
 func (f *fakeBackend) Snapshot(context.Context) (Snapshot, error) {
@@ -54,6 +55,9 @@ func (f *fakeBackend) Add(_ context.Context, w Worker, _ int) error {
 	n := base.DeepCopy()
 	n.Name = w.Name
 	n.UID = types.UID("uid-" + w.Name)
+	if f.nativeIDs {
+		n.Spec.ProviderID = "minikube://qemu2/containerd/minikube/" + w.Name
+	}
 	f.snapshot.Nodes[w.Name] = *n
 	f.snapshot.Profile.Nodes = append(f.snapshot.Profile.Nodes, struct {
 		Name         string
@@ -63,10 +67,69 @@ func (f *fakeBackend) Add(_ context.Context, w Worker, _ int) error {
 }
 func (f *fakeBackend) Mark(_ context.Context, w Worker) error {
 	n := f.snapshot.Nodes[w.Name]
-	n.Spec.ProviderID = w.ID
+	if f.nativeIDs && n.Spec.ProviderID != providerID(w) {
+		return fmt.Errorf("native provider ID is immutable")
+	}
+	n.Spec.ProviderID = providerID(w)
+	if w.ProviderID != "" {
+		if n.Annotations == nil {
+			n.Annotations = map[string]string{}
+		}
+		n.Annotations[intentAnnotation] = w.ID
+	}
 	n.Labels[poolLabel] = "elastic"
 	f.snapshot.Nodes[w.Name] = n
 	return nil
+}
+
+func TestNativeProviderIdentityIsSeparateFromDurableWorkIdentity(t *testing.T) {
+	p, backend := fixture(t)
+	backend.nativeIDs = true
+	p.state.Config.CooldownSeconds = 0
+	if err := p.increase(1); err != nil {
+		t.Fatal(err)
+	}
+	intent := p.state.Workers[0].ID
+	if err := p.reconcile(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	w := p.state.Workers[0]
+	if w.ID != intent || w.Phase != "ready" || w.ProviderID == "" || providerID(w) != backend.snapshot.Nodes[w.Name].Spec.ProviderID {
+		t.Fatalf("native provider identity must not replace the stable work intent: %+v", w)
+	}
+	if err := validateSnapshot(p.state, backend.snapshot); err != nil {
+		t.Fatal(err)
+	}
+	rpc := rpcServer{p: p}
+	instances, err := rpc.NodeGroupNodes(context.Background(), &pb.NodeGroupNodesRequest{Id: groupID})
+	if err != nil || len(instances.Instances) != 1 || instances.Instances[0].Id != w.ProviderID {
+		t.Fatalf("autoscaler must receive the native provider identity: %+v %v", instances, err)
+	}
+	old := &pb.ExternalGrpcNode{Name: w.Name, ProviderID: w.ProviderID, Annotations: map[string]string{intentAnnotation: "old-work-intent"}}
+	if _, err := rpc.NodeGroupDeleteNodes(context.Background(), &pb.NodeGroupDeleteNodesRequest{Id: groupID, Nodes: []*pb.ExternalGrpcNode{old}}); err == nil {
+		t.Fatal("a stale request cannot target a replacement with the same native name and provider ID")
+	}
+	if p.state.Workers[0].Phase != "ready" {
+		t.Fatal("rejected stale deletion changed the current worker intent")
+	}
+	current := &pb.ExternalGrpcNode{Name: w.Name, ProviderID: w.ProviderID, Annotations: map[string]string{intentAnnotation: w.ID}}
+	owner, err := rpc.NodeGroupForNode(context.Background(), &pb.NodeGroupForNodeRequest{Node: current})
+	if err != nil || owner.NodeGroup.Id != groupID {
+		t.Fatalf("current incarnation must retain its node group: %+v %v", owner, err)
+	}
+	if _, err := rpc.NodeGroupDeleteNodes(context.Background(), &pb.NodeGroupDeleteNodesRequest{Id: groupID, Nodes: []*pb.ExternalGrpcNode{current}}); err != nil {
+		t.Fatalf("a current annotated incarnation must permit normal deletion: %v", err)
+	}
+	node := backend.snapshot.Nodes[w.Name]
+	node.UID = "replacement"
+	if _, err := bindProviderID(w, node); err == nil {
+		t.Fatal("cannot bind a replacement that reuses the node name")
+	}
+	node.UID = types.UID(w.UID)
+	node.Spec.ProviderID = "minikube://changed"
+	if _, err := bindProviderID(w, node); err == nil {
+		t.Fatal("cannot replace an already recorded native provider identity")
+	}
 }
 func (f *fakeBackend) Delete(_ context.Context, w Worker) error {
 	f.deletes++

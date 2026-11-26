@@ -1,0 +1,730 @@
+{
+  "measurement": {
+    "base": "adac4ebfc65f8fafb941f04f023b45b1d304c53f",
+    "merge_base": "adac4ebfc65f8fafb941f04f023b45b1d304c53f",
+    "head": "71e9029e1d5788aa928c095f0036d82f4417ebde",
+    "classifier": "Pygments 2.21.0",
+    "deltas": [
+      {
+        "before": ".github/CODEOWNERS",
+        "after": ".github/CODEOWNERS",
+        "added": 4,
+        "deleted": 0
+      },
+      {
+        "before": ".github/review-evidence/vfkit/directory.png",
+        "after": ".github/review-evidence/vfkit/directory.png",
+        "added": null,
+        "deleted": null
+      },
+      {
+        "before": ".github/review-evidence/vfkit/files-001.png",
+        "after": ".github/review-evidence/vfkit/files-001.png",
+        "added": null,
+        "deleted": null
+      },
+      {
+        "before": ".github/review-evidence/vfkit/files.md",
+        "after": ".github/review-evidence/vfkit/files.md",
+        "added": 3,
+        "deleted": 0
+      },
+      {
+        "before": ".github/review-evidence/vfkit/intent.png",
+        "after": ".github/review-evidence/vfkit/intent.png",
+        "added": null,
+        "deleted": null
+      },
+      {
+        "before": ".github/review-evidence/vfkit/languages.png",
+        "after": ".github/review-evidence/vfkit/languages.png",
+        "added": null,
+        "deleted": null
+      },
+      {
+        "before": ".github/review-evidence/vfkit/verification.json",
+        "after": ".github/review-evidence/vfkit/verification.json",
+        "added": 47,
+        "deleted": 0
+      },
+      {
+        "before": ".github/review-evidence/vfkit/work.json",
+        "after": ".github/review-evidence/vfkit/work.json",
+        "added": 79,
+        "deleted": 0
+      },
+      {
+        "before": ".github/review-evidence/vfkit/work.md",
+        "after": ".github/review-evidence/vfkit/work.md",
+        "added": 36,
+        "deleted": 0
+      },
+      {
+        "before": ".github/review-evidence/vfkit/work.mmd",
+        "after": ".github/review-evidence/vfkit/work.mmd",
+        "added": 21,
+        "deleted": 0
+      },
+      {
+        "before": "README.md",
+        "after": "README.md",
+        "added": 2,
+        "deleted": 1
+      },
+      {
+        "before": "charts/minikube-cluster-autoscaler-addon/Chart.yaml",
+        "after": "charts/minikube-cluster-autoscaler-addon/Chart.yaml",
+        "added": 2,
+        "deleted": 2
+      },
+      {
+        "before": "charts/minikube-cluster-autoscaler-addon/README.md",
+        "after": "charts/minikube-cluster-autoscaler-addon/README.md",
+        "added": 34,
+        "deleted": 34
+      },
+      {
+        "before": "charts/minikube-cluster-autoscaler-addon/templates/validate-image.yaml",
+        "after": "charts/minikube-cluster-autoscaler-addon/templates/validate-image.yaml",
+        "added": 12,
+        "deleted": 0
+      },
+      {
+        "before": "charts/minikube-cluster-autoscaler-addon/values.schema.constraints.json",
+        "after": "charts/minikube-cluster-autoscaler-addon/values.schema.constraints.json",
+        "added": 1,
+        "deleted": 1
+      },
+      {
+        "before": "charts/minikube-cluster-autoscaler-addon/values.schema.json",
+        "after": "charts/minikube-cluster-autoscaler-addon/values.schema.json",
+        "added": 2,
+        "deleted": 2
+      },
+      {
+        "before": "charts/minikube-cluster-autoscaler-addon/values.yaml",
+        "after": "charts/minikube-cluster-autoscaler-addon/values.yaml",
+        "added": 1,
+        "deleted": 1
+      },
+      {
+        "before": "docs/minikube-integration.md",
+        "after": "docs/minikube-integration.md",
+        "added": 28,
+        "deleted": 3
+      },
+      {
+        "before": "pkg/addon/addon.go",
+        "after": "pkg/addon/addon.go",
+        "added": 19,
+        "deleted": 2
+      },
+      {
+        "before": "pkg/addon/backend.go",
+        "after": "pkg/addon/backend.go",
+        "added": 31,
+        "deleted": 9
+      },
+      {
+        "before": "pkg/addon/bridge.go",
+        "after": "pkg/addon/bridge.go",
+        "added": 8,
+        "deleted": 1
+      },
+      {
+        "before": "pkg/addon/config.go",
+        "after": "pkg/addon/config.go",
+        "added": 1,
+        "deleted": 0
+      },
+      {
+        "before": "pkg/addon/platform_test.go",
+        "after": "pkg/addon/platform_test.go",
+        "added": 5,
+        "deleted": 0
+      },
+      {
+        "before": "pkg/addon/provider_test.go",
+        "after": "pkg/addon/provider_test.go",
+        "added": 64,
+        "deleted": 1
+      },
+      {
+        "before": "pkg/addon/rpc.go",
+        "after": "pkg/addon/rpc.go",
+        "added": 6,
+        "deleted": 3
+      },
+      {
+        "before": "pkg/addon/state.go",
+        "after": "pkg/addon/state.go",
+        "added": 36,
+        "deleted": 5
+      },
+      {
+        "before": "pkg/addon/versions.go",
+        "after": "pkg/addon/versions.go",
+        "added": 28,
+        "deleted": 0
+      },
+      {
+        "before": "pkg/addon/versions_test.go",
+        "after": "pkg/addon/versions_test.go",
+        "added": 27,
+        "deleted": 0
+      },
+      {
+        "before": "pkg/addon/windows_lifecycle_test.go",
+        "after": "pkg/addon/windows_lifecycle_test.go",
+        "added": 10,
+        "deleted": 0
+      },
+      {
+        "before": "scripts/addon.ps1",
+        "after": "scripts/addon.ps1",
+        "added": 4,
+        "deleted": 1
+      },
+      {
+        "before": "scripts/addon.sh",
+        "after": "scripts/addon.sh",
+        "added": 4,
+        "deleted": 0
+      },
+      {
+        "before": "scripts/test-chart.py",
+        "after": "scripts/test-chart.py",
+        "added": 23,
+        "deleted": 4
+      }
+    ],
+    "shares": [
+      {
+        "language": "Go",
+        "added": 235,
+        "deleted": 21
+      },
+      {
+        "language": "Markdown",
+        "added": 103,
+        "deleted": 38
+      },
+      {
+        "language": "JSON",
+        "added": 129,
+        "deleted": 3
+      },
+      {
+        "language": "Python",
+        "added": 23,
+        "deleted": 4
+      },
+      {
+        "language": "Unknown",
+        "added": 25,
+        "deleted": 0
+      },
+      {
+        "language": "YAML",
+        "added": 15,
+        "deleted": 3
+      },
+      {
+        "language": "PowerShell",
+        "added": 4,
+        "deleted": 1
+      },
+      {
+        "language": "Bash",
+        "added": 4,
+        "deleted": 0
+      }
+    ]
+  },
+  "rows": [
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/work.json",
+        "after": ".github/review-evidence/vfkit/work.json",
+        "added": 79,
+        "deleted": 0
+      },
+      "description": "+79 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "charts/minikube-cluster-autoscaler-addon/README.md",
+        "after": "charts/minikube-cluster-autoscaler-addon/README.md",
+        "added": 34,
+        "deleted": 34
+      },
+      "description": "+34 added / -34 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/provider_test.go",
+        "after": "pkg/addon/provider_test.go",
+        "added": 64,
+        "deleted": 1
+      },
+      "description": "+64 added / -1 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/verification.json",
+        "after": ".github/review-evidence/vfkit/verification.json",
+        "added": 47,
+        "deleted": 0
+      },
+      "description": "+47 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/state.go",
+        "after": "pkg/addon/state.go",
+        "added": 36,
+        "deleted": 5
+      },
+      "description": "+36 added / -5 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/backend.go",
+        "after": "pkg/addon/backend.go",
+        "added": 31,
+        "deleted": 9
+      },
+      "description": "+31 added / -9 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/work.md",
+        "after": ".github/review-evidence/vfkit/work.md",
+        "added": 36,
+        "deleted": 0
+      },
+      "description": "+36 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "docs/minikube-integration.md",
+        "after": "docs/minikube-integration.md",
+        "added": 28,
+        "deleted": 3
+      },
+      "description": "+28 added / -3 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/versions.go",
+        "after": "pkg/addon/versions.go",
+        "added": 28,
+        "deleted": 0
+      },
+      "description": "+28 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/versions_test.go",
+        "after": "pkg/addon/versions_test.go",
+        "added": 27,
+        "deleted": 0
+      },
+      "description": "+27 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "scripts/test-chart.py",
+        "after": "scripts/test-chart.py",
+        "added": 23,
+        "deleted": 4
+      },
+      "description": "+23 added / -4 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/work.mmd",
+        "after": ".github/review-evidence/vfkit/work.mmd",
+        "added": 21,
+        "deleted": 0
+      },
+      "description": "+21 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/addon.go",
+        "after": "pkg/addon/addon.go",
+        "added": 19,
+        "deleted": 2
+      },
+      "description": "+19 added / -2 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "charts/minikube-cluster-autoscaler-addon/templates/validate-image.yaml",
+        "after": "charts/minikube-cluster-autoscaler-addon/templates/validate-image.yaml",
+        "added": 12,
+        "deleted": 0
+      },
+      "description": "+12 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/windows_lifecycle_test.go",
+        "after": "pkg/addon/windows_lifecycle_test.go",
+        "added": 10,
+        "deleted": 0
+      },
+      "description": "+10 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/bridge.go",
+        "after": "pkg/addon/bridge.go",
+        "added": 8,
+        "deleted": 1
+      },
+      "description": "+8 added / -1 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/rpc.go",
+        "after": "pkg/addon/rpc.go",
+        "added": 6,
+        "deleted": 3
+      },
+      "description": "+6 added / -3 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/platform_test.go",
+        "after": "pkg/addon/platform_test.go",
+        "added": 5,
+        "deleted": 0
+      },
+      "description": "+5 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "scripts/addon.ps1",
+        "after": "scripts/addon.ps1",
+        "added": 4,
+        "deleted": 1
+      },
+      "description": "+4 added / -1 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/CODEOWNERS",
+        "after": ".github/CODEOWNERS",
+        "added": 4,
+        "deleted": 0
+      },
+      "description": "+4 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "charts/minikube-cluster-autoscaler-addon/Chart.yaml",
+        "after": "charts/minikube-cluster-autoscaler-addon/Chart.yaml",
+        "added": 2,
+        "deleted": 2
+      },
+      "description": "+2 added / -2 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "charts/minikube-cluster-autoscaler-addon/values.schema.json",
+        "after": "charts/minikube-cluster-autoscaler-addon/values.schema.json",
+        "added": 2,
+        "deleted": 2
+      },
+      "description": "+2 added / -2 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "scripts/addon.sh",
+        "after": "scripts/addon.sh",
+        "added": 4,
+        "deleted": 0
+      },
+      "description": "+4 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/files.md",
+        "after": ".github/review-evidence/vfkit/files.md",
+        "added": 3,
+        "deleted": 0
+      },
+      "description": "+3 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "README.md",
+        "after": "README.md",
+        "added": 2,
+        "deleted": 1
+      },
+      "description": "+2 added / -1 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "charts/minikube-cluster-autoscaler-addon/values.schema.constraints.json",
+        "after": "charts/minikube-cluster-autoscaler-addon/values.schema.constraints.json",
+        "added": 1,
+        "deleted": 1
+      },
+      "description": "+1 added / -1 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "charts/minikube-cluster-autoscaler-addon/values.yaml",
+        "after": "charts/minikube-cluster-autoscaler-addon/values.yaml",
+        "added": 1,
+        "deleted": 1
+      },
+      "description": "+1 added / -1 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": "pkg/addon/config.go",
+        "after": "pkg/addon/config.go",
+        "added": 1,
+        "deleted": 0
+      },
+      "description": "+1 added / -0 removed",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/directory.png",
+        "after": ".github/review-evidence/vfkit/directory.png",
+        "added": null,
+        "deleted": null
+      },
+      "description": "Binary change; text-line count unavailable",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/files-001.png",
+        "after": ".github/review-evidence/vfkit/files-001.png",
+        "added": null,
+        "deleted": null
+      },
+      "description": "Binary change; text-line count unavailable",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/intent.png",
+        "after": ".github/review-evidence/vfkit/intent.png",
+        "added": null,
+        "deleted": null
+      },
+      "description": "Binary change; text-line count unavailable",
+      "kind": "diff"
+    },
+    {
+      "delta": {
+        "before": ".github/review-evidence/vfkit/languages.png",
+        "after": ".github/review-evidence/vfkit/languages.png",
+        "added": null,
+        "deleted": null
+      },
+      "description": "Binary change; text-line count unavailable",
+      "kind": "diff"
+    }
+  ],
+  "pages": [
+    {
+      "file": "files-001.png",
+      "paths": [
+        ".github/review-evidence/vfkit/work.json",
+        ".github/review-evidence/vfkit/verification.json",
+        ".github/review-evidence/vfkit/work.md",
+        ".github/review-evidence/vfkit/work.mmd",
+        ".github/CODEOWNERS",
+        ".github/review-evidence/vfkit/files.md",
+        ".github/review-evidence/vfkit/directory.png",
+        ".github/review-evidence/vfkit/files-001.png",
+        ".github/review-evidence/vfkit/intent.png",
+        ".github/review-evidence/vfkit/languages.png",
+        "charts/minikube-cluster-autoscaler-addon/README.md",
+        "charts/minikube-cluster-autoscaler-addon/templates/validate-image.yaml",
+        "charts/minikube-cluster-autoscaler-addon/Chart.yaml",
+        "charts/minikube-cluster-autoscaler-addon/values.schema.json",
+        "charts/minikube-cluster-autoscaler-addon/values.schema.constraints.json",
+        "charts/minikube-cluster-autoscaler-addon/values.yaml",
+        "pkg/addon/versions_test.go",
+        "pkg/addon/addon.go",
+        "pkg/addon/windows_lifecycle_test.go",
+        "pkg/addon/bridge.go",
+        "pkg/addon/rpc.go",
+        "pkg/addon/platform_test.go",
+        "pkg/addon/config.go",
+        "pkg/addon/provider_test.go",
+        "pkg/addon/state.go",
+        "pkg/addon/backend.go",
+        "scripts/test-chart.py",
+        "scripts/addon.ps1",
+        "scripts/addon.sh",
+        "docs/minikube-integration.md",
+        "pkg/addon/versions.go",
+        "README.md"
+      ],
+      "sha256": "d257e2ee5dfa8cb41fc5e5cf1850f3e33766d3d365ee2f020b3d24d88a15d2e4"
+    }
+  ],
+  "projection": {
+    "version": "directory-partition/1",
+    "max_rows": 10,
+    "height_inches": 4.8,
+    "groups": [
+      {
+        "label": ".github/",
+        "paths": [
+          ".github/review-evidence/vfkit/work.json",
+          ".github/review-evidence/vfkit/verification.json",
+          ".github/review-evidence/vfkit/work.md",
+          ".github/review-evidence/vfkit/work.mmd",
+          ".github/CODEOWNERS",
+          ".github/review-evidence/vfkit/files.md",
+          ".github/review-evidence/vfkit/directory.png",
+          ".github/review-evidence/vfkit/files-001.png",
+          ".github/review-evidence/vfkit/intent.png",
+          ".github/review-evidence/vfkit/languages.png"
+        ],
+        "added": 190,
+        "deleted": 0,
+        "binary": 4
+      },
+      {
+        "label": "charts/",
+        "paths": [
+          "charts/minikube-cluster-autoscaler-addon/README.md",
+          "charts/minikube-cluster-autoscaler-addon/templates/validate-image.yaml",
+          "charts/minikube-cluster-autoscaler-addon/Chart.yaml",
+          "charts/minikube-cluster-autoscaler-addon/values.schema.json",
+          "charts/minikube-cluster-autoscaler-addon/values.schema.constraints.json",
+          "charts/minikube-cluster-autoscaler-addon/values.yaml"
+        ],
+        "added": 52,
+        "deleted": 40,
+        "binary": 0
+      },
+      {
+        "label": "pkg/ (other)",
+        "paths": [
+          "pkg/addon/versions_test.go",
+          "pkg/addon/addon.go",
+          "pkg/addon/windows_lifecycle_test.go",
+          "pkg/addon/bridge.go",
+          "pkg/addon/rpc.go",
+          "pkg/addon/platform_test.go",
+          "pkg/addon/config.go"
+        ],
+        "added": 76,
+        "deleted": 6,
+        "binary": 0
+      },
+      {
+        "label": "pkg/addon/provider_test.go",
+        "paths": [
+          "pkg/addon/provider_test.go"
+        ],
+        "added": 64,
+        "deleted": 1,
+        "binary": 0
+      },
+      {
+        "label": "pkg/addon/state.go",
+        "paths": [
+          "pkg/addon/state.go"
+        ],
+        "added": 36,
+        "deleted": 5,
+        "binary": 0
+      },
+      {
+        "label": "pkg/addon/backend.go",
+        "paths": [
+          "pkg/addon/backend.go"
+        ],
+        "added": 31,
+        "deleted": 9,
+        "binary": 0
+      },
+      {
+        "label": "scripts/",
+        "paths": [
+          "scripts/test-chart.py",
+          "scripts/addon.ps1",
+          "scripts/addon.sh"
+        ],
+        "added": 31,
+        "deleted": 5,
+        "binary": 0
+      },
+      {
+        "label": "docs/",
+        "paths": [
+          "docs/minikube-integration.md"
+        ],
+        "added": 28,
+        "deleted": 3,
+        "binary": 0
+      },
+      {
+        "label": "pkg/addon/versions.go",
+        "paths": [
+          "pkg/addon/versions.go"
+        ],
+        "added": 28,
+        "deleted": 0,
+        "binary": 0
+      },
+      {
+        "label": "README.md",
+        "paths": [
+          "README.md"
+        ],
+        "added": 2,
+        "deleted": 1,
+        "binary": 0
+      }
+    ]
+  },
+  "palette_sha256": "149d8efaef55c657d889c6507a76ecd624947bca2f37b3fa359841a21f2b5147",
+  "matplotlib": "3.11.2",
+  "description_inputs": {},
+  "intent_checked_at": null,
+  "model_calls": 0
+}

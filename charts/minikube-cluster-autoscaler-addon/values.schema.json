@@ -61,10 +61,10 @@
             "tag": {
               "type": "string",
               "description": "Cluster Autoscaler image tag, matched to the Kubernetes minor version.",
-              "default": "v1.35.0",
+              "default": "v1.35.3@sha256:d45370bcadf7ae5e7a52281ccd79f7c0a72d0cf983b036bdc4f1afb2c34eebe3",
               "minLength": 1,
               "maxLength": 128,
-              "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$"
+              "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*(?:@sha256:[a-f0-9]{64})?$"
             }
           },
           "additionalProperties": true

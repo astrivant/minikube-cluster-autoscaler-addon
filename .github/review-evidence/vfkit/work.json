@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "hosts": [
+    {
+      "id": "github",
+      "provider": "github",
+      "url": "https://github.com"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "project",
+      "kind": "project",
+      "label": "astrivant/minikube-cluster-autoscaler-addon",
+      "host": "github",
+      "path": "astrivant/minikube-cluster-autoscaler-addon",
+      "url": "https://github.com/astrivant/minikube-cluster-autoscaler-addon",
+      "settings": {
+        "visibility": "public",
+        "source": "https://api.github.com/repos/astrivant/minikube-cluster-autoscaler-addon",
+        "observed_at": "2026-11-26T19:22:28.014183+00:00",
+        "expires_at": "2026-11-26T21:22:28.014183+00:00"
+      }
+    },
+    {
+      "id": "target",
+      "kind": "branch",
+      "label": "main",
+      "parent": "project",
+      "host": "github",
+      "revision": "adac4ebfc65f8fafb941f04f023b45b1d304c53f",
+      "url": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/tree/main"
+    },
+    {
+      "id": "feature",
+      "kind": "branch",
+      "label": "multilayer-prediction-study",
+      "parent": "project",
+      "host": "github",
+      "revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
+      "url": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/tree/multilayer-prediction-study",
+      "work": "review"
+    },
+    {
+      "id": "review",
+      "kind": "review",
+      "label": "Native shared-vmnet autoscaler support",
+      "parent": "project",
+      "host": "github",
+      "number": 30,
+      "revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
+      "state": "open",
+      "draft": false,
+      "url": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30",
+      "source": "https://api.github.com/repos/astrivant/minikube-cluster-autoscaler-addon/pulls/30",
+      "work": "review"
+    }
+  ],
+  "links": [
+    {
+      "id": "source",
+      "source": "review",
+      "target": "feature",
+      "kind": "correlates",
+      "evidence": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30",
+      "source_revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
+      "target_revision": "71e9029e1d5788aa928c095f0036d82f4417ebde"
+    },
+    {
+      "id": "base",
+      "source": "feature",
+      "target": "target",
+      "kind": "based_on",
+      "evidence": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30",
+      "source_revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
+      "target_revision": "adac4ebfc65f8fafb941f04f023b45b1d304c53f"
+    }
+  ]
+}

@@ -8,6 +8,11 @@ func TestSupportedDrivers(t *testing.T) {
 		valid                     bool
 	}{
 		{"darwin", "arm64", "qemu2", "socket_vmnet", true},
+		{"darwin", "arm64", "vfkit", "vmnet-shared", true},
+		{"darwin", "arm64", "vfkit", "vmnet-host", false},
+		{"darwin", "arm64", "vfkit", "socket_vmnet", false},
+		{"darwin", "amd64", "vfkit", "vmnet-shared", true},
+		{"darwin", "amd64", "vfkit", "vmnet-host", false},
 		{"darwin", "amd64", "qemu2", "socket_vmnet", true},
 		{"linux", "amd64", "kvm2", "", true},
 		{"linux", "arm64", "docker", "", true},

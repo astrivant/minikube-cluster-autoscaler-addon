@@ -28,6 +28,9 @@ func TestMain(m *testing.M) {
 		_, _ = f.Write(append(data, '\n'))
 		_ = f.Close()
 		if name == "kubectl" {
+			if slices.Contains(call, "version") {
+				fmt.Println(`{"serverVersion":{"gitVersion":"v1.37.2"}}`)
+			}
 			if slices.Contains(call, "deployments,statefulsets") {
 				fmt.Println("deployment/coredns")
 			}
@@ -37,6 +40,13 @@ func TestMain(m *testing.M) {
 			if slices.Contains(call, "apply") && slices.Contains(call, "-") {
 				_, _ = io.Copy(io.Discard, os.Stdin)
 			}
+		}
+		if name == "provider" && slices.Contains(call, "--mode=autoscaler-image") {
+			image, err := AutoscalerImage("v1.37.2")
+			if err != nil {
+				os.Exit(1)
+			}
+			fmt.Println(image)
 		}
 		if name == "docker" && slices.Contains(call, "ls") && os.Getenv("AUTOSCALER_TEST_CONTAINER") == "1" {
 			fmt.Println("existing-container")

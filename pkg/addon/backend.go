@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -92,8 +91,8 @@ func (b commands) Snapshot(ctx context.Context) (Snapshot, error) {
 	if err := supportedDriver(runtime.GOOS, runtime.GOARCH, s.Profile.Driver, s.Profile.Network); err != nil {
 		return s, err
 	}
-	if !strings.HasPrefix(s.Profile.KubernetesConfig.KubernetesVersion, "v1.35.") {
-		return s, fmt.Errorf("this addon pins Cluster Autoscaler 1.35; Kubernetes must be 1.35.x")
+	if _, err := AutoscalerImage(s.Profile.KubernetesConfig.KubernetesVersion); err != nil {
+		return s, err
 	}
 	controlPlanes := 0
 	for _, n := range s.Profile.Nodes {
@@ -128,11 +127,21 @@ func (b commands) Snapshot(ctx context.Context) (Snapshot, error) {
 }
 
 // supportedDriver keeps the upstream Linux/arm64 KVM limitation explicit.
-// Windows uses Docker Desktop with Linux containers.
+// Windows uses Docker Desktop with Linux containers. Both macOS architectures support
+// vfkit over shared vmnet; node lifecycle remains delegated to Minikube.
 func supportedDriver(goos, goarch, driver, network string) error {
 	if err := supportedPlatform(goos, goarch); err != nil {
 		return err
 	}
+	// Shared vmnet is routable between the control plane, workers and host bridge.
+	// Host-only vfkit networking cannot support this multi-node provider contract.
+	if goos == "darwin" && driver == "vfkit" {
+		if network != "vmnet-shared" {
+			return fmt.Errorf("macOS vfkit requires vmnet-shared networking")
+		}
+		return nil
+	}
+
 	expected := "kvm2"
 	if goos == "darwin" {
 		expected = "qemu2"
@@ -157,15 +166,25 @@ func (b commands) Add(ctx context.Context, _ Worker, memory int) error {
 
 func (b commands) Mark(ctx context.Context, w Worker) error {
 	// UID preconditions prevent assigning ownership to a replacement with the same name.
-	patch, _ := json.Marshal([]map[string]any{
-		{"op": "test", "path": "/metadata/uid", "value": w.UID},
-		{"op": "add", "path": "/spec/providerID", "value": w.ID},
-	})
+	operations := []map[string]any{{"op": "test", "path": "/metadata/uid", "value": w.UID}}
+	if w.ProviderID != "" {
+		// Kubernetes forbids replacing an existing providerID. Test the native
+		// identity instead; the host journal has independently captured it.
+		operations = append(operations, map[string]any{"op": "test", "path": "/spec/providerID", "value": w.ProviderID})
+	} else {
+		operations = append(operations, map[string]any{"op": "add", "path": "/spec/providerID", "value": w.ID})
+	}
+	patch, _ := json.Marshal(operations)
 	if _, err := b.kube(ctx, nil, "patch", "node", w.Name, "--type=json", "-p", string(patch)); err != nil {
 		return err
 	}
 	if _, err := b.kube(ctx, nil, "label", "node", w.Name, poolLabel+"=elastic", "--overwrite"); err != nil {
 		return err
+	}
+	if w.ProviderID != "" {
+		if _, err := b.kube(ctx, nil, "annotate", "node", w.Name, intentAnnotation+"="+w.ID, "--overwrite"); err != nil {
+			return err
+		}
 	}
 	_, err := b.kube(ctx, nil, "taint", "node", w.Name, elasticTaint+"=true:NoSchedule", "--overwrite")
 	return err
@@ -180,8 +199,11 @@ func (b commands) Delete(ctx context.Context, w Worker) error {
 	if err = json.Unmarshal(data, &node); err != nil {
 		return err
 	}
-	if string(node.UID) != w.UID || node.Spec.ProviderID != w.ID || node.Labels[poolLabel] != "elastic" {
+	if string(node.UID) != w.UID || node.Spec.ProviderID != providerID(w) || node.Labels[poolLabel] != "elastic" {
 		return fmt.Errorf("refusing deletion: node ownership changed")
+	}
+	if w.ProviderID != "" && node.Annotations[intentAnnotation] != w.ID {
+		return fmt.Errorf("refusing deletion: worker incarnation annotation changed")
 	}
 	cordoned := node.Spec.Unschedulable
 	for _, t := range node.Spec.Taints {
