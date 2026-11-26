@@ -45,7 +45,7 @@ create a one-node cluster on macOS and enable the addon:
 
 ```bash
 minikube start --driver=qemu2 --network=socket_vmnet \
-  --nodes=1 --memory=4096 --cpus=2
+  --nodes=1 --cni=kindnet --memory=4096 --cpus=2
 minikube addons enable cluster-autoscaler
 ```
 
@@ -53,10 +53,14 @@ On Intel and Apple Silicon Macs, `vfkit` can use the same provider with shared V
 
 ```bash
 minikube start --driver=vfkit --network=vmnet-shared \
-  --nodes=1 --memory=3072 --cpus=2
+  --nodes=1 --cni=kindnet --memory=3072 --cpus=2
 ```
 
 Install Minikube's vfkit networking prerequisites before running this command.
+Select a cluster-wide CNI explicitly when starting from one node. A single-node
+bridge-only default can leave an added worker NotReady because its CNI is not
+initialized. `--cni=kindnet` supports the later worker fanout.
+
 The addon continues to delegate worker creation/deletion to Minikube; it does not
 invoke either hypervisor directly. Existing nodes remain protected base workers.
 The `vmnet-host` network is rejected because this provider requires routable
