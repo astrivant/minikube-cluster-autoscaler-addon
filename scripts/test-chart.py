@@ -87,7 +87,12 @@ class AddonValuesTests(unittest.TestCase):
                 args = [arg for key in DURATION_ARGS for arg in ("--set-string", f"cluster-autoscaler.extraArgs.{key}={duration}")]
                 result = render(*args)
                 self.assertEqual(result.returncode, 0, result.stderr)
-        for tag in ("v1.35.0", "custom_1.2-rc", "a" * 128):
+        for tag in (
+            "v1.35.0",
+            "custom_1.2-rc",
+            "a" * 128,
+            "v1.37.0@sha256:bad6629616b9544dc5e358ee030f6d1d4047192e484d2e15bffb0c9fcd90b949",
+        ):
             with self.subTest(tag=tag):
                 result = render("--set-string", f"cluster-autoscaler.image.tag={tag}")
                 self.assertEqual(result.returncode, 0, result.stderr)

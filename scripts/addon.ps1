@@ -89,6 +89,9 @@ try {
         'enable' {
             $state = Get-Content -Raw (Join-Path $StateDir 'provider/state.json') | ConvertFrom-Json
             if ([string]$state.Error -ne '') { throw 'Provider is paused; inspect status and recover before enabling' }
+            # Resolve compatibility before mutating provider or controller state.
+            $server = (Invoke-Tool 'kubectl' ($KubeArguments + @('version', '-o', 'json'))) | ConvertFrom-Json
+            $autoscalerImage = Invoke-Tool $Binary @('--mode=autoscaler-image', "--kubernetes-version=$($server.serverVersion.gitVersion)")
             Protect-Base
             Invoke-Tool $Binary (@('--mode=bridge-check') + $BridgeArguments)
             $existing = Invoke-Tool 'docker' @('container', 'ls', '--all', '--filter', "name=^/$Container`$", '--format', '{{.ID}}')
@@ -109,7 +112,7 @@ try {
             Prepare-Chart
             Invoke-Tool 'kubectl' ($KubeArguments + @('apply', '--server-side', '--field-manager=minikube-cluster-autoscaler-addon', '-f', (Join-Path $Chart 'provisioningrequests.yaml')))
             $timeout = [int]$Settings.provisionTimeoutSeconds + 60
-            Invoke-Tool 'helm' @('upgrade', '--install', $Release, $Chart, '--kube-context', $AddonProfile, '--namespace', $Settings.namespace, '--set-string', "provider.address=$($Settings.listen)", '--set-string', "cluster-autoscaler.autoDiscovery.clusterName=$AddonProfile", '--set-string', "cluster-autoscaler.extraArgs.max-node-provision-time=$($timeout)s", '--wait', '--timeout', '5m')
+            Invoke-Tool 'helm' @('upgrade', '--install', $Release, $Chart, '--kube-context', $AddonProfile, '--namespace', $Settings.namespace, '--set-string', "provider.address=$($Settings.listen)", '--set-string', "cluster-autoscaler.image.tag=$autoscalerImage", '--set-string', "cluster-autoscaler.autoDiscovery.clusterName=$AddonProfile", '--set-string', "cluster-autoscaler.extraArgs.max-node-provision-time=$($timeout)s", '--wait', '--timeout', '5m')
         }
         'test' {
             Invoke-Tool $Binary (@('--mode=check') + $BridgeArguments)

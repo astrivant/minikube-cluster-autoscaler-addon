@@ -22,7 +22,8 @@ import (
 
 // Execute runs the addon CLI with the supplied release metadata.
 func Execute(version, commit, buildDate string) error {
-	mode := flag.String("mode", "check", "init, bridge, serve, check, bridge-check, maintenance-check, or resume")
+	mode := flag.String("mode", "check", "init, bridge, serve, check, bridge-check, maintenance-check, resume, or autoscaler-image")
+	kubernetesVersion := flag.String("kubernetes-version", "", "server version for offline autoscaler-image selection")
 	config := flag.String("config", "", "explicit addon JSON configuration")
 	dir := flag.String("state-dir", "", "private state directory; required")
 	showVersion := flag.Bool("version", false, "print build version and platform")
@@ -32,6 +33,15 @@ func Execute(version, commit, buildDate string) error {
 	}
 	if *showVersion {
 		fmt.Printf("minikube-cluster-autoscaler-addon %s (%s/%s, commit %s, built %s)\n", version, runtime.GOOS, runtime.GOARCH, commit, buildDate)
+		return nil
+	}
+	if *mode == "autoscaler-image" {
+		log.Print("INFO Selecting reviewed Cluster Autoscaler image")
+		image, err := AutoscalerImage(*kubernetesVersion)
+		if err != nil {
+			return err
+		}
+		fmt.Println(image)
 		return nil
 	}
 	if *dir == "" || !filepath.IsAbs(*dir) {

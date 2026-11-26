@@ -21,7 +21,7 @@
             "tag": {
               "minLength": 1,
               "maxLength": 128,
-              "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$"
+              "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*(?:@sha256:[a-f0-9]{64})?$"
             }
           }
         },

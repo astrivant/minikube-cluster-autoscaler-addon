@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -92,8 +91,8 @@ func (b commands) Snapshot(ctx context.Context) (Snapshot, error) {
 	if err := supportedDriver(runtime.GOOS, runtime.GOARCH, s.Profile.Driver, s.Profile.Network); err != nil {
 		return s, err
 	}
-	if !strings.HasPrefix(s.Profile.KubernetesConfig.KubernetesVersion, "v1.35.") {
-		return s, fmt.Errorf("this addon pins Cluster Autoscaler 1.35; Kubernetes must be 1.35.x")
+	if _, err := AutoscalerImage(s.Profile.KubernetesConfig.KubernetesVersion); err != nil {
+		return s, err
 	}
 	controlPlanes := 0
 	for _, n := range s.Profile.Nodes {
@@ -128,7 +127,7 @@ func (b commands) Snapshot(ctx context.Context) (Snapshot, error) {
 }
 
 // supportedDriver keeps the upstream Linux/arm64 KVM limitation explicit.
-// Windows uses Docker Desktop with Linux containers. Apple Silicon also supports
+// Windows uses Docker Desktop with Linux containers. Both macOS architectures support
 // vfkit over shared vmnet; node lifecycle remains delegated to Minikube.
 func supportedDriver(goos, goarch, driver, network string) error {
 	if err := supportedPlatform(goos, goarch); err != nil {
@@ -136,7 +135,7 @@ func supportedDriver(goos, goarch, driver, network string) error {
 	}
 	// Shared vmnet is routable between the control plane, workers and host bridge.
 	// Host-only vfkit networking cannot support this multi-node provider contract.
-	if goos == "darwin" && goarch == "arm64" && driver == "vfkit" {
+	if goos == "darwin" && driver == "vfkit" {
 		if network != "vmnet-shared" {
 			return fmt.Errorf("macOS vfkit requires vmnet-shared networking")
 		}

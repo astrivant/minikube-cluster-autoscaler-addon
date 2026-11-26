@@ -19,7 +19,8 @@ addon. Minikube handles their setup and lifecycle.
 ## Quick install
 
 Use a Minikube build containing [the addon integration](https://github.com/kubernetes/minikube/pull/23809)
-and a running Kubernetes **1.35.x** cluster. Have Docker running, with Git,
+and a running stable Kubernetes **1.35, 1.36 or 1.37** cluster. The native
+entrypoint selects the matching digest-pinned autoscaler image. Have Docker running, with Git,
 Go **1.27.1**, Helm and kubectl installed; macOS/Linux also need Bash and jq,
 and Windows uses PowerShell. [Host and cluster setup](docs/minikube-integration.md#installation)
 covers supported drivers and cluster creation.

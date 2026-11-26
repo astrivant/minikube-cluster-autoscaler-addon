@@ -32,25 +32,28 @@ before enabling the addon.
 | Host | Architecture | Minikube driver |
 | --- | --- | --- |
 | macOS | arm64, amd64 | `qemu2` with `socket_vmnet` |
-| macOS | arm64 | `vfkit` with `vmnet-shared` |
+| macOS | arm64, amd64 | `vfkit` with `vmnet-shared` |
 | Linux | amd64 | `kvm2` |
 | Linux | arm64 | `docker` |
 | Windows | amd64, arm64 | `docker` (Linux containers) |
 
-Use Kubernetes 1.35.x; the chart pins Cluster Autoscaler 1.35.0. For example,
+Use Minikube's default stable Kubernetes release. The installed addon selects a
+reviewed, digest-pinned Cluster Autoscaler image matching the actual server minor.
+The current image catalog covers Kubernetes 1.35, 1.36 and 1.37; unknown minors or
+prereleases fail before provider/controller mutation. For example,
 create a one-node cluster on macOS and enable the addon:
 
 ```bash
 minikube start --driver=qemu2 --network=socket_vmnet \
-  --kubernetes-version=v1.35.0 --nodes=1 --memory=4096 --cpus=2
+  --nodes=1 --memory=4096 --cpus=2
 minikube addons enable cluster-autoscaler
 ```
 
-For Apple Silicon, `vfkit` can use the same provider with shared VM networking:
+On Intel and Apple Silicon Macs, `vfkit` can use the same provider with shared VM networking:
 
 ```bash
 minikube start --driver=vfkit --network=vmnet-shared \
-  --kubernetes-version=v1.35.0 --nodes=3 --memory=3072 --cpus=2
+  --nodes=1 --memory=3072 --cpus=2
 ```
 
 Install Minikube's vfkit networking prerequisites before running this command.
@@ -123,7 +126,7 @@ The Windows bundle includes `bin/minikube-cluster-autoscaler-addon.exe` and a
 Linux provider binary for Docker Desktop. The Minikube command remains the same:
 
 ```powershell
-minikube start --driver=docker --kubernetes-version=v1.35.0
+minikube start --driver=docker
 minikube addons enable cluster-autoscaler
 ```
 
