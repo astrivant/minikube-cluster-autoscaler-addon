@@ -18,8 +18,8 @@
       "settings": {
         "visibility": "public",
         "source": "https://api.github.com/repos/astrivant/minikube-cluster-autoscaler-addon",
-        "observed_at": "2026-11-26T18:50:52.471915+00:00",
-        "expires_at": "2026-11-26T20:50:52.471915+00:00"
+        "observed_at": "2026-11-26T19:22:28.014183+00:00",
+        "expires_at": "2026-11-26T21:22:28.014183+00:00"
       }
     },
     {
@@ -37,7 +37,7 @@
       "label": "multilayer-prediction-study",
       "parent": "project",
       "host": "github",
-      "revision": "890eaada899246c39a5b5f35e259a719aaf302f0",
+      "revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
       "url": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/tree/multilayer-prediction-study",
       "work": "review"
     },
@@ -48,7 +48,7 @@
       "parent": "project",
       "host": "github",
       "number": 30,
-      "revision": "890eaada899246c39a5b5f35e259a719aaf302f0",
+      "revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
       "state": "open",
       "draft": false,
       "url": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30",
@@ -63,8 +63,8 @@
       "target": "feature",
       "kind": "correlates",
       "evidence": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30",
-      "source_revision": "890eaada899246c39a5b5f35e259a719aaf302f0",
-      "target_revision": "890eaada899246c39a5b5f35e259a719aaf302f0"
+      "source_revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
+      "target_revision": "71e9029e1d5788aa928c095f0036d82f4417ebde"
     },
     {
       "id": "base",
@@ -72,7 +72,7 @@
       "target": "target",
       "kind": "based_on",
       "evidence": "https://github.com/astrivant/minikube-cluster-autoscaler-addon/pull/30",
-      "source_revision": "890eaada899246c39a5b5f35e259a719aaf302f0",
+      "source_revision": "71e9029e1d5788aa928c095f0036d82f4417ebde",
       "target_revision": "adac4ebfc65f8fafb941f04f023b45b1d304c53f"
     }
   ]
